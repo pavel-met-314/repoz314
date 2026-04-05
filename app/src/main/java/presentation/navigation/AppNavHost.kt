@@ -1,6 +1,9 @@
 package presentation.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,8 +20,16 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun AppNavHost(navController: NavHostController, startDestination: String = Screen.Login.route) {
-    NavHost(navController = navController, startDestination = startDestination) {
+fun AppNavHost(
+    navController: NavHostController,
+    startDestination: String = Screen.Login.route,
+    innerPadding: PaddingValues = PaddingValues()
+) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = Modifier.padding(innerPadding)
+    ) {
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = { isAdmin ->
