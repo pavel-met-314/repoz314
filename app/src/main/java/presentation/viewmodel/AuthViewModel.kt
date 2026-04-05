@@ -15,12 +15,45 @@ sealed class AuthUiState {
     data class Error(val message: String) : AuthUiState()
 }
 
+// Состояние сессии при запуске приложения
+sealed class SessionState {
+    object Checking : SessionState()           // идёт проверка
+    object Unauthenticated : SessionState()    // не авторизован → экран входа
+    data class AuthenticatedClient(val user: User) : SessionState()  // клиент
+    data class AuthenticatedAdmin(val user: User) : SessionState()   // админ
+}
+
 class AuthViewModel(
     private val repository: AuthRepository = AuthRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState: StateFlow<AuthUiState> = _uiState
+
+    private val _sessionState = MutableStateFlow<SessionState>(SessionState.Checking)
+    val sessionState: StateFlow<SessionState> = _sessionState
+
+    init {
+        checkSession()
+    }
+
+    fun checkSession() {
+        viewModelScope.launch {
+            _sessionState.value = SessionState.Checking
+            try {
+                val user = repository.getCurrentUser()
+                if (user == null) {
+                    _sessionState.value = SessionState.Unauthenticated
+                } else if (user.role == "admin") {
+                    _sessionState.value = SessionState.AuthenticatedAdmin(user)
+                } else {
+                    _sessionState.value = SessionState.AuthenticatedClient(user)
+                }
+            } catch (e: Exception) {
+                _sessionState.value = SessionState.Unauthenticated
+            }
+        }
+    }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
@@ -49,9 +82,8 @@ class AuthViewModel(
     fun logout() {
         repository.logout()
         _uiState.value = AuthUiState.Idle
+        _sessionState.value = SessionState.Unauthenticated
     }
-
-    fun isLoggedIn(): Boolean = repository.isLoggedIn()
 
     fun resetState() {
         _uiState.value = AuthUiState.Idle

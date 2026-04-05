@@ -34,6 +34,12 @@ class AuthRepository(
 
     fun getCurrentUserId(): String? = auth.currentUser?.uid
 
+    suspend fun getCurrentUser(): User? {
+        val uid = auth.currentUser?.uid ?: return null
+        val doc = db.collection("users").document(uid).get().await()
+        return doc.toObject(User::class.java)
+    }
+
     fun isLoggedIn(): Boolean = auth.currentUser != null
 
     fun logout() = auth.signOut()
