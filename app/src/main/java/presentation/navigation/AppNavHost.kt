@@ -8,8 +8,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import domain.model.Service
-import presentation.screens.*
+import presentation.screens.PortfolioScreen
+import presentation.screens.ServicesScreen
 import presentation.viewmodel.AuthViewModel
+import presentation.viewmodel.PortfolioViewModel
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -19,6 +21,7 @@ sealed class Screen(val route: String) {
     object MyAppointments : Screen("my_appointments")
     object Profile : Screen("profile")
     object AdminDashboard : Screen("admin_dashboard")
+    object Portfolio : Screen("portfolio")
 }
 
 @Composable
@@ -30,6 +33,9 @@ fun AppNavHost(
 ) {
     // Выбранная услуга передаётся через общий стейт между Services и Booking
     var pendingService by remember { mutableStateOf<Service?>(null) }
+
+    // Общий ViewModel для портфолио (чтобы не перезагружать при переходах)
+    val portfolioViewModel: PortfolioViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
     NavHost(
         navController = navController,
@@ -92,6 +98,7 @@ fun AppNavHost(
         }
         composable(Screen.MyAppointments.route) { MyAppointmentsScreen(authViewModel = authViewModel) }
         composable(Screen.Profile.route) { ProfileScreen(authViewModel = authViewModel) }
+        composable(Screen.Portfolio.route) { PortfolioScreen(portfolioViewModel = portfolioViewModel) }
         composable(Screen.AdminDashboard.route) { AdminDashboardScreen(authViewModel = authViewModel) }
     }
 }
