@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,9 +30,25 @@ fun AdminScheduleScreen(
     val successMessage by adminViewModel.successMessage.collectAsState()
     val error by adminViewModel.error.collectAsState()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Snackbar при успехе или ошибке
+    LaunchedEffect(successMessage) {
+        if (successMessage != null) {
+            snackbarHostState.showSnackbar(successMessage!!)
+            adminViewModel.clearMessages()
+        }
+    }
+    LaunchedEffect(error) {
+        if (error != null) {
+            snackbarHostState.showSnackbar(error!!)
+            adminViewModel.clearMessages()
+        }
+    }
+
     val dbFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     val displayFormatter = SimpleDateFormat("dd.MM", Locale.getDefault())
-    val displayFullFormatter = SimpleDateFormat("dd MMMM yyyy", Locale("ru"))
+    val displayFullFormatter = SimpleDateFormat("dd MMMM yyyy", Locale.forLanguageTag("ru"))
 
     val dates: List<Calendar> = remember {
         (0..30).map { offset ->
@@ -81,11 +98,6 @@ fun AdminScheduleScreen(
         }
     }
 
-    // Snackbar
-    LaunchedEffect(successMessage) {
-        if (successMessage != null) adminViewModel.clearMessages()
-    }
-
     if (showBlockDialog) {
         AddBlockDialog(
             date = selectedDateStr,
@@ -107,7 +119,8 @@ fun AdminScheduleScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -166,19 +179,17 @@ fun AdminScheduleScreen(
                             Text("Время работы", style = MaterialTheme.typography.labelMedium)
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                OutlinedTextField(
-                                    value = startTime,
-                                    onValueChange = { startTime = it },
-                                    label = { Text("Начало") },
-                                    modifier = Modifier.weight(1f),
-                                    singleLine = true
+                                TimePickerButton(
+                                    label = "Начало",
+                                    time = startTime,
+                                    onTimeSelected = { startTime = it },
+                                    modifier = Modifier.weight(1f)
                                 )
-                                OutlinedTextField(
-                                    value = endTime,
-                                    onValueChange = { endTime = it },
-                                    label = { Text("Конец") },
-                                    modifier = Modifier.weight(1f),
-                                    singleLine = true
+                                TimePickerButton(
+                                    label = "Конец",
+                                    time = endTime,
+                                    onTimeSelected = { endTime = it },
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
 
@@ -197,19 +208,17 @@ fun AdminScheduleScreen(
                             if (hasBreak) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    OutlinedTextField(
-                                        value = breakStart,
-                                        onValueChange = { breakStart = it },
-                                        label = { Text("Начало") },
-                                        modifier = Modifier.weight(1f),
-                                        singleLine = true
+                                    TimePickerButton(
+                                        label = "Перерыв с",
+                                        time = breakStart,
+                                        onTimeSelected = { breakStart = it },
+                                        modifier = Modifier.weight(1f)
                                     )
-                                    OutlinedTextField(
-                                        value = breakEnd,
-                                        onValueChange = { breakEnd = it },
-                                        label = { Text("Конец") },
-                                        modifier = Modifier.weight(1f),
-                                        singleLine = true
+                                    TimePickerButton(
+                                        label = "Перерыв до",
+                                        time = breakEnd,
+                                        onTimeSelected = { breakEnd = it },
+                                        modifier = Modifier.weight(1f)
                                     )
                                 }
                             }
@@ -233,15 +242,6 @@ fun AdminScheduleScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Сохранить расписание")
-                        }
-
-                        successMessage?.let {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(it, color = MaterialTheme.colorScheme.secondary)
-                        }
-                        error?.let {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(it, color = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -281,6 +281,62 @@ fun AdminScheduleScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerButton(
+    label: String,
+    time: String,
+    onTimeSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    val parts = time.split(":").map { it.toIntOrNull() ?: 0 }
+    val timePickerState = rememberTimePickerState(
+        initialHour = parts.getOrElse(0) { 9 },
+        initialMinute = parts.getOrElse(1) { 0 },
+        is24Hour = true
+    )
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(label) },
+            text = {
+                TimePicker(state = timePickerState)
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onTimeSelected("%02d:%02d".format(timePickerState.hour, timePickerState.minute))
+                    showDialog = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
+
+    OutlinedButton(
+        onClick = { showDialog = true },
+        modifier = modifier
+    ) {
+        Icon(
+            Icons.Default.AccessTime,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Column(horizontalAlignment = Alignment.Start) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+            Text(text = time, style = MaterialTheme.typography.titleSmall)
         }
     }
 }

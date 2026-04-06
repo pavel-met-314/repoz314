@@ -25,6 +25,8 @@ fun AdminServicesScreen(
     val successMessage by adminViewModel.successMessage.collectAsState()
     val error by adminViewModel.error.collectAsState()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     var showDialog by remember { mutableStateOf(false) }
     var editingService by remember { mutableStateOf<Service?>(null) }
 
@@ -33,7 +35,16 @@ fun AdminServicesScreen(
     }
 
     LaunchedEffect(successMessage) {
-        if (successMessage != null) adminViewModel.clearMessages()
+        if (successMessage != null) {
+            snackbarHostState.showSnackbar(successMessage!!)
+            adminViewModel.clearMessages()
+        }
+    }
+    LaunchedEffect(error) {
+        if (error != null) {
+            snackbarHostState.showSnackbar(error!!)
+            adminViewModel.clearMessages()
+        }
     }
 
     if (showDialog) {
@@ -71,28 +82,14 @@ fun AdminServicesScreen(
                 icon = {},
                 text = { Text("+ Добавить услугу") }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Сообщения об успехе/ошибке
-            successMessage?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                )
-            }
-            error?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                )
-            }
 
             if (services.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

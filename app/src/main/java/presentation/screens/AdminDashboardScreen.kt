@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -86,7 +87,10 @@ fun AdminDashboardScreen(
     val sessionState by authViewModel.sessionState.collectAsState()
     val todayAppointments by adminViewModel.todayAppointments.collectAsState()
     val isLoading by adminViewModel.isLoading.collectAsState()
+    val isRefreshing by adminViewModel.isRefreshing.collectAsState()
     val error by adminViewModel.error.collectAsState()
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val adminName = when (val s = sessionState) {
         is SessionState.AuthenticatedAdmin -> s.user.name
@@ -95,6 +99,13 @@ fun AdminDashboardScreen(
 
     LaunchedEffect(Unit) {
         adminViewModel.loadTodayAppointments()
+    }
+
+    LaunchedEffect(error) {
+        if (error != null) {
+            snackbarHostState.showSnackbar(error ?: "Ошибка")
+            adminViewModel.clearMessages()
+        }
     }
 
     val today = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date())
@@ -110,6 +121,7 @@ fun AdminDashboardScreen(
                 }
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
@@ -210,26 +222,40 @@ fun AdminDashboardScreen(
             Text("Ближайшие записи сегодня", style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
 
-            when {
-                isLoading -> Box(
-                    modifier = Modifier.fillMaxWidth().height(120.dp),
-                    contentAlignment = Alignment.Center
-                ) { CircularProgressIndicator() }
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { adminViewModel.refreshTodayAppointments() },
+                modifier = Modifier.weight(1f)
+            ) {
+                when {
+                    isLoading -> Box(
+                        modifier = Modifier.fillMaxWidth().fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) { CircularProgressIndicator() }
 
-                error != null -> Text("Ошибка: $error", color = MaterialTheme.colorScheme.error)
+                    todayAppointments.isEmpty() -> Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("📋", style = MaterialTheme.typography.displayMedium)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "На сегодня записей нет",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                        }
+                    }
 
-                todayAppointments.isEmpty() -> Text(
-                    "На сегодня записей нет",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-
-                else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(todayAppointments.sortedBy { it.time }) { appointment ->
-                        DashboardAppointmentCard(
-                            appointment = appointment,
-                            onCancel = { adminViewModel.cancelAppointment(appointment.id) }
-                        )
+                    else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(todayAppointments.sortedBy { it.time }) { appointment ->
+                            DashboardAppointmentCard(
+                                appointment = appointment,
+                                onCancel = { adminViewModel.cancelAppointment(appointment.id) },
+                                onComplete = { adminViewModel.completeAppointment(appointment.id) }
+                            )
+                        }
                     }
                 }
             }
@@ -268,7 +294,8 @@ private fun QuickCard(
 @Composable
 private fun DashboardAppointmentCard(
     appointment: Appointment,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    onComplete: () -> Unit = {}
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -291,13 +318,27 @@ private fun DashboardAppointmentCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
-                onClick = onCancel,
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Отменить запись")
+            if (appointment.status == "active") {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onComplete,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Завершить")
+                    }
+                    OutlinedButton(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Отменить")
+                    }
+                }
             }
         }
     }

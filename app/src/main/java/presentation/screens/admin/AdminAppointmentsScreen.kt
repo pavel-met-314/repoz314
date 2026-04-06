@@ -24,6 +24,23 @@ fun AdminAppointmentsScreen(
 ) {
     val selectedDateAppointments by adminViewModel.selectedDateAppointments.collectAsState()
     val isLoading by adminViewModel.isLoading.collectAsState()
+    val successMessage by adminViewModel.successMessage.collectAsState()
+    val error by adminViewModel.error.collectAsState()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(successMessage) {
+        if (successMessage != null) {
+            snackbarHostState.showSnackbar(successMessage!!)
+            adminViewModel.clearMessages()
+        }
+    }
+    LaunchedEffect(error) {
+        if (error != null) {
+            snackbarHostState.showSnackbar(error!!)
+            adminViewModel.clearMessages()
+        }
+    }
 
     val dbFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     val displayFormatter = SimpleDateFormat("dd.MM", Locale.getDefault())
@@ -59,7 +76,8 @@ fun AdminAppointmentsScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -117,6 +135,9 @@ fun AdminAppointmentsScreen(
                                 appointment = appointment,
                                 onCancel = {
                                     adminViewModel.cancelAppointment(appointment.id, selectedDateStr)
+                                },
+                                onComplete = {
+                                    adminViewModel.completeAppointment(appointment.id, selectedDateStr)
                                 }
                             )
                         }
@@ -176,14 +197,28 @@ private fun AdminAppointmentCard(
             )
             if (appointment.status == "active") {
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedButton(
-                    onClick = onCancel,
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Отменить запись")
+                    OutlinedButton(
+                        onClick = onComplete,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.secondary
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Завершить")
+                    }
+                    OutlinedButton(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Отменить")
+                    }
                 }
             }
         }

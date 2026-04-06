@@ -158,8 +158,13 @@ private fun ClientDetailScreen(
         mutableStateOf(client.notes.lastOrNull()?.note ?: "")
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(successMessage) {
-        if (successMessage != null) onClearMessage()
+        if (successMessage != null) {
+            snackbarHostState.showSnackbar(successMessage)
+            onClearMessage()
+        }
     }
 
     Scaffold(
@@ -172,7 +177,8 @@ private fun ClientDetailScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -249,10 +255,6 @@ private fun ClientDetailScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Сохранить заметку")
-                }
-                successMessage?.let {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(it, color = MaterialTheme.colorScheme.secondary)
                 }
             }
         }

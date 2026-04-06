@@ -77,6 +77,20 @@ class AdminViewModel(
         }
     }
 
+    fun refreshTodayAppointments() {
+        val today = formatter.format(Date())
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                _todayAppointments.value = repository.getAppointments(today)
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
+    }
+
     // ─── Загрузка записей на конкретную дату ──────────────────────────────────
 
     fun loadAppointmentsForDate(date: String) {
@@ -98,6 +112,20 @@ class AdminViewModel(
         viewModelScope.launch {
             try {
                 repository.cancelAppointment(appointmentId)
+                _successMessage.value = "Запись отменена"
+                if (onRefreshDate != null) loadAppointmentsForDate(onRefreshDate)
+                else loadTodayAppointments()
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
+    }
+
+    fun completeAppointment(appointmentId: String, onRefreshDate: String? = null) {
+        viewModelScope.launch {
+            try {
+                repository.completeAppointment(appointmentId)
+                _successMessage.value = "Запись отмечена как завершённая"
                 if (onRefreshDate != null) loadAppointmentsForDate(onRefreshDate)
                 else loadTodayAppointments()
             } catch (e: Exception) {
