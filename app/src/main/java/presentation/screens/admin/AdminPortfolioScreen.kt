@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.asImageBitmap
 import domain.model.Portfolio
 import domain.model.Service
 import presentation.ui.RemoteImage
@@ -222,7 +223,7 @@ private fun UploadPhotoSheet(
                                 val inputStream = context.contentResolver.openInputStream(selectedUri!!)
                                 val bmp = android.graphics.BitmapFactory.decodeStream(inputStream)
                                 inputStream?.close()
-                                bmp?.let { androidx.compose.ui.graphics.asImageBitmap(it) }
+                                bmp?.asImageBitmap()
                             } catch (_: Exception) { null }
                         }
                         if (bitmap != null) {

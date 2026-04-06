@@ -151,7 +151,8 @@ fun AdminAppointmentsScreen(
 @Composable
 private fun AdminAppointmentCard(
     appointment: Appointment,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    onComplete: () -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {

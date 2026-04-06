@@ -6,8 +6,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -325,7 +325,7 @@ private fun TimePickerButton(
         modifier = modifier
     ) {
         Icon(
-            Icons.Default.AccessTime,
+            Icons.Default.DateRange,
             contentDescription = null,
             modifier = Modifier.size(16.dp)
         )

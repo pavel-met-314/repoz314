@@ -55,6 +55,9 @@ class AdminViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 

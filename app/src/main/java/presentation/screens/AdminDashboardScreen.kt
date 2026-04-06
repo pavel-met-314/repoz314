@@ -4,13 +4,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -88,7 +87,7 @@ fun AdminDashboardScreen(
     val todayAppointments by adminViewModel.todayAppointments.collectAsState()
     val isLoading by adminViewModel.isLoading.collectAsState()
     val isRefreshing by adminViewModel.isRefreshing.collectAsState()
-    val error by adminViewModel.error.collectAsState()
+    val error by adminViewModel.error.collectAsState(initial = null)
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -116,7 +115,7 @@ fun AdminDashboardScreen(
                 title = { Text("Панель управления") },
                 actions = {
                     IconButton(onClick = { authViewModel.logout() }) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Выйти")
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Выйти")
                     }
                 }
             )
@@ -139,7 +138,7 @@ fun AdminDashboardScreen(
                 NavigationBarItem(
                     selected = false,
                     onClick = { currentSection = AdminSection.SCHEDULE },
-                    icon = { Icon(Icons.Default.CalendarMonth, null) },
+                    icon = { Icon(Icons.Default.DateRange, null) },
                     label = { Text("Расписание") }
                 )
                 NavigationBarItem(
@@ -157,7 +156,7 @@ fun AdminDashboardScreen(
                 NavigationBarItem(
                     selected = false,
                     onClick = { currentSection = AdminSection.PORTFOLIO },
-                    icon = { Icon(Icons.Default.PhotoLibrary, null) },
+                    icon = { Icon(Icons.Default.Star, null) },
                     label = { Text("Фото") }
                 )
             }

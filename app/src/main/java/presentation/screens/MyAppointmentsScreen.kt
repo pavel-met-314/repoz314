@@ -14,8 +14,9 @@ import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.MyAppointmentsViewModel
 import presentation.viewmodel.SessionState
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyAppointmentsScreen(
     authViewModel: AuthViewModel,

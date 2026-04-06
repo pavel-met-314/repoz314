@@ -8,7 +8,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import domain.model.Service
+import presentation.screens.AdminDashboardScreen
+import presentation.screens.BookingScreen
+import presentation.screens.LoginScreen
+import presentation.screens.MyAppointmentsScreen
 import presentation.screens.PortfolioScreen
+import presentation.screens.ProfileScreen
+import presentation.screens.RegisterScreen
 import presentation.screens.ServicesScreen
 import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.PortfolioViewModel
