@@ -26,6 +26,8 @@ fun LoginScreen(
 
     val uiState by authViewModel.uiState.collectAsState()
 
+    val isFormValid = email.isNotBlank() && password.length >= 6
+
     // Реагируем на успешный вход
     LaunchedEffect(uiState) {
         if (uiState is AuthUiState.Success) {
@@ -42,11 +44,24 @@ fun LoginScreen(
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Логотип и название
             Text(
-                text = if (isAdmin) "Вход для администратора" else "Вход для клиента",
-                style = MaterialTheme.typography.headlineSmall
+                text = "🌊",
+                style = MaterialTheme.typography.displayLarge
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Морская причёска",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = if (isAdmin) "Панель администратора" else "Запись на услуги",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+            Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -69,6 +84,9 @@ fun LoginScreen(
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Done
                 ),
+                supportingText = if (password.isNotEmpty() && password.length < 6) {
+                    { Text("Минимум 6 символов", color = MaterialTheme.colorScheme.error) }
+                } else null,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -79,7 +97,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { authViewModel.login(email, password) },
-                enabled = uiState !is AuthUiState.Loading,
+                enabled = isFormValid && uiState !is AuthUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (uiState is AuthUiState.Loading) {
