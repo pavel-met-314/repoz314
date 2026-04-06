@@ -1,10 +1,10 @@
 package presentation.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,8 +18,8 @@ data class BottomNavItem(
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem("Услуги", Screen.Services.route, Icons.Filled.List),
-    BottomNavItem("Портфолио", Screen.Portfolio.route, Icons.Filled.PhotoLibrary),
+    BottomNavItem("Услуги", Screen.Services.route, Icons.AutoMirrored.Filled.List),
+    BottomNavItem("Портфолио", Screen.Portfolio.route, Icons.Filled.FavoriteBorder),
     BottomNavItem("Записи", Screen.MyAppointments.route, Icons.Filled.DateRange),
     BottomNavItem("Профиль", Screen.Profile.route, Icons.Filled.Person)
 )
