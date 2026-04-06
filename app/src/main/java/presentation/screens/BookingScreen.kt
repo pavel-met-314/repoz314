@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.project.notification.ReminderScheduler
 import domain.model.Service
 import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.BookingUiState
@@ -36,6 +37,7 @@ fun BookingScreen(
     val uiState by bookingViewModel.uiState.collectAsState()
     val availableSlots by bookingViewModel.availableSlots.collectAsState()
     val isLoadingSlots by bookingViewModel.isLoadingSlots.collectAsState()
+    val context = LocalContext.current
 
     // Индекс выбранного дня (0 = сегодня, ..., 13)
     var selectedDayIndex by remember { mutableStateOf<Int?>(null) }
@@ -68,6 +70,18 @@ fun BookingScreen(
     // Когда запись успешна — показываем экран подтверждения
     LaunchedEffect(uiState) {
         if (uiState is BookingUiState.Success) {
+            // Планируем напоминание за день до записи
+            val date = selectedDateStr
+            val slot = selectedSlot
+            if (date != null && slot != null) {
+                ReminderScheduler.schedule(
+                    context = context,
+                    appointmentId = "${date}_${slot}_${service.id}",
+                    serviceName = service.name,
+                    date = date,
+                    time = slot
+                )
+            }
             showSuccess = true
         }
     }
