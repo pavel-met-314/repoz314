@@ -79,6 +79,29 @@ class AppointmentRepository(private val db: FirebaseFirestore = FirebaseFirestor
             .await()
     }
 
+    suspend fun completeAppointment(appointmentId: String) {
+        db.collection("appointments")
+            .document(appointmentId)
+            .update("status", "completed")
+            .await()
+    }
+
+    /** Автоматически завершает все активные записи, дата которых уже прошла */
+    suspend fun autoCompleteOldAppointments(clientId: String) {
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            .format(java.util.Date())
+        val snapshot = db.collection("appointments")
+            .whereEqualTo("clientId", clientId)
+            .whereEqualTo("status", "active")
+            .get().await()
+        snapshot.documents.forEach { doc ->
+            val date = doc.getString("date") ?: return@forEach
+            if (date < today) {
+                doc.reference.update("status", "completed")
+            }
+        }
+    }
+
     // ─── Расписание ──────────────────────────────────────────────────────────
 
     suspend fun saveSchedule(schedule: Schedule) {

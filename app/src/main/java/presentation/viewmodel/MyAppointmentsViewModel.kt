@@ -18,19 +18,42 @@ class MyAppointmentsViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private var currentClientId: String? = null
+
     fun loadAppointments(clientId: String) {
+        currentClientId = clientId
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
             try {
+                repository.autoCompleteOldAppointments(clientId)
                 _appointments.value = repository.getClientAppointments(clientId)
             } catch (e: Exception) {
                 _error.value = e.message ?: "Ошибка загрузки"
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    fun refresh() {
+        val clientId = currentClientId ?: return
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            _error.value = null
+            try {
+                repository.autoCompleteOldAppointments(clientId)
+                _appointments.value = repository.getClientAppointments(clientId)
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Ошибка обновления"
+            } finally {
+                _isRefreshing.value = false
             }
         }
     }
