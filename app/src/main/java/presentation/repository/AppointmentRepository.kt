@@ -48,6 +48,66 @@ class AppointmentRepository(private val db: FirebaseFirestore = FirebaseFirestor
             .await()
     }
 
+    // ─── Расписание ──────────────────────────────────────────────────────────
+
+    suspend fun saveSchedule(schedule: Schedule) {
+        db.collection("schedule")
+            .document(schedule.date)
+            .set(schedule)
+            .await()
+    }
+
+    // ─── Личные блоки ────────────────────────────────────────────────────────
+
+    suspend fun saveBlock(block: Block) {
+        val docRef = if (block.id.isEmpty())
+            db.collection("blocks").document()
+        else
+            db.collection("blocks").document(block.id)
+        val withId = block.copy(id = docRef.id)
+        docRef.set(withId).await()
+    }
+
+    suspend fun deleteBlock(blockId: String) {
+        db.collection("blocks").document(blockId).delete().await()
+    }
+
+    // ─── Все записи (для любой даты) ─────────────────────────────────────────
+
+    suspend fun getAllAppointments(): List<Appointment> {
+        val snapshot = db.collection("appointments").get().await()
+        return snapshot.documents.mapNotNull { it.toObject(Appointment::class.java) }
+    }
+
+    // ─── Управление услугами ─────────────────────────────────────────────────
+
+    suspend fun saveService(service: domain.model.Service) {
+        val docRef = if (service.id.isEmpty())
+            db.collection("services").document()
+        else
+            db.collection("services").document(service.id)
+        val withId = service.copy(id = docRef.id)
+        docRef.set(withId).await()
+    }
+
+    suspend fun deleteService(serviceId: String) {
+        db.collection("services").document(serviceId).delete().await()
+    }
+
+    // ─── История клиентов ────────────────────────────────────────────────────
+
+    suspend fun getAllClientHistories(): List<domain.model.ClientHistory> {
+        val snapshot = db.collection("clients_history").get().await()
+        return snapshot.documents.mapNotNull { it.toObject(domain.model.ClientHistory::class.java) }
+    }
+
+    suspend fun saveClientHistory(history: domain.model.ClientHistory) {
+        db.collection("clients_history")
+            .document(history.clientId)
+            .set(history)
+            .await()
+    }
+
     /** Вычисляет доступные слоты на дату для услуги с указанной длительностью */
     suspend fun getAvailableSlots(date: String, serviceDuration: Int): List<String> {
         val schedule = getSchedule(date) ?: return emptyList()
