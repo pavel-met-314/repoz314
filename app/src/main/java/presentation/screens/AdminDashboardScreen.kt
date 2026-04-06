@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,22 +20,25 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import domain.model.Appointment
 import presentation.screens.admin.AdminAppointmentsScreen
 import presentation.screens.admin.AdminClientsScreen
+import presentation.screens.admin.AdminPortfolioScreen
 import presentation.screens.admin.AdminScheduleScreen
 import presentation.screens.admin.AdminServicesScreen
 import presentation.viewmodel.AdminViewModel
 import presentation.viewmodel.AuthViewModel
+import presentation.viewmodel.PortfolioViewModel
 import presentation.viewmodel.SessionState
 import java.text.SimpleDateFormat
 import java.util.*
 
 // Разделы нижней навигации Админки
-private enum class AdminSection { DASHBOARD, APPOINTMENTS, SCHEDULE, CLIENTS, SERVICES }
+private enum class AdminSection { DASHBOARD, APPOINTMENTS, SCHEDULE, CLIENTS, SERVICES, PORTFOLIO }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
     authViewModel: AuthViewModel,
-    adminViewModel: AdminViewModel = viewModel()
+    adminViewModel: AdminViewModel = viewModel(),
+    portfolioViewModel: PortfolioViewModel = viewModel()
 ) {
     var currentSection by remember { mutableStateOf(AdminSection.DASHBOARD) }
 
@@ -64,6 +68,13 @@ fun AdminDashboardScreen(
         AdminSection.SERVICES -> {
             AdminServicesScreen(
                 adminViewModel = adminViewModel,
+                onBack = { currentSection = AdminSection.DASHBOARD }
+            )
+            return
+        }
+        AdminSection.PORTFOLIO -> {
+            AdminPortfolioScreen(
+                portfolioViewModel = portfolioViewModel,
                 onBack = { currentSection = AdminSection.DASHBOARD }
             )
             return
@@ -130,6 +141,12 @@ fun AdminDashboardScreen(
                     onClick = { currentSection = AdminSection.SERVICES },
                     icon = { Icon(Icons.Default.Settings, null) },
                     label = { Text("Услуги") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { currentSection = AdminSection.PORTFOLIO },
+                    icon = { Icon(Icons.Default.PhotoLibrary, null) },
+                    label = { Text("Фото") }
                 )
             }
         }
