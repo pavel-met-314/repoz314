@@ -32,6 +32,37 @@ class AppointmentRepository(private val db: FirebaseFirestore = FirebaseFirestor
         val docRef = db.collection("appointments").document()
         val withId = appointment.copy(id = docRef.id)
         docRef.set(withId).await()
+        // Автоматически обновляем историю клиента
+        updateClientHistory(withId)
+    }
+
+    private suspend fun updateClientHistory(appointment: Appointment) {
+        val histRef = db.collection("clients_history").document(appointment.clientId)
+        val doc = histRef.get().await()
+        val existing = if (doc.exists()) doc.toObject(domain.model.ClientHistory::class.java) else null
+        val newNote = domain.model.VisitNote(
+            date = appointment.date,
+            serviceName = appointment.serviceName,
+            note = ""
+        )
+        if (existing == null) {
+            val history = domain.model.ClientHistory(
+                clientId = appointment.clientId,
+                clientName = appointment.clientName,
+                clientPhone = appointment.clientPhone,
+                totalVisits = 1,
+                notes = listOf(newNote)
+            )
+            histRef.set(history).await()
+        } else {
+            val updatedNotes = existing.notes + newNote
+            histRef.update(
+                mapOf(
+                    "totalVisits" to (existing.totalVisits + 1),
+                    "notes" to updatedNotes
+                )
+            ).await()
+        }
     }
 
     suspend fun getClientAppointments(clientId: String): List<Appointment> {
