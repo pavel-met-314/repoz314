@@ -2,11 +2,12 @@ package presentation.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import domain.model.Service
 import presentation.screens.*
 import presentation.viewmodel.AuthViewModel
 
@@ -27,6 +28,9 @@ fun AppNavHost(
     innerPadding: PaddingValues = PaddingValues(),
     authViewModel: AuthViewModel
 ) {
+    // Выбранная услуга передаётся через общий стейт между Services и Booking
+    var pendingService by remember { mutableStateOf<Service?>(null) }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -60,12 +64,34 @@ fun AppNavHost(
                 authViewModel = authViewModel
             )
         }
-        composable(Screen.Services.route) { ServicesScreen() }
-        composable(Screen.Booking.route) { BookingScreen() }
-        composable(Screen.MyAppointments.route) { MyAppointmentsScreen() }
+        composable(Screen.Services.route) {
+            ServicesScreen(
+                onServiceSelected = { service ->
+                    pendingService = service
+                    navController.navigate(Screen.Booking.route)
+                }
+            )
+        }
+        composable(Screen.Booking.route) {
+            val service = pendingService
+            if (service != null) {
+                BookingScreen(
+                    service = service,
+                    onBack = { navController.popBackStack() },
+                    onBookingSuccess = {
+                        navController.navigate(Screen.Services.route) {
+                            popUpTo(Screen.Services.route) { inclusive = true }
+                        }
+                    },
+                    authViewModel = authViewModel
+                )
+            } else {
+                // Если сервис не выбран — возвращаемся назад
+                LaunchedEffect(Unit) { navController.popBackStack() }
+            }
+        }
+        composable(Screen.MyAppointments.route) { MyAppointmentsScreen(authViewModel = authViewModel) }
         composable(Screen.Profile.route) { ProfileScreen(authViewModel = authViewModel) }
-        composable(Screen.AdminDashboard.route) { AdminDashboardScreen() }
+        composable(Screen.AdminDashboard.route) { AdminDashboardScreen(authViewModel = authViewModel) }
     }
 }
-
-

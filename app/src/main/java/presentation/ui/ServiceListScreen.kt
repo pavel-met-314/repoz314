@@ -8,11 +8,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import domain.model.Service
 import presentation.viewmodel.ServiceViewModel
 import presentation.viewmodel.ServiceUiState
 
 @Composable
-fun ServiceListScreen(viewModel: ServiceViewModel = viewModel()) {
+fun ServiceListScreen(
+    viewModel: ServiceViewModel = viewModel(),
+    onServiceSelected: (Service) -> Unit = {}
+) {
     // Вызов загрузки данных при первом отображении
     LaunchedEffect(Unit) {
         viewModel.loadServices()
@@ -40,6 +44,13 @@ fun ServiceListScreen(viewModel: ServiceViewModel = viewModel()) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(text = "Цена: ${service.price} ₽", style = MaterialTheme.typography.bodyMedium)
                             Text(text = "Длительность: ${service.duration} мин", style = MaterialTheme.typography.bodySmall)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { onServiceSelected(service) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Записаться")
+                            }
                         }
                     }
                 }
