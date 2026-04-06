@@ -1,5 +1,7 @@
 package presentation.screens
 
+import android.content.Intent
+import android.provider.CalendarContract
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -10,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import domain.model.Service
@@ -232,6 +235,8 @@ private fun BookingSuccessScreen(
     time: String,
     onGoHome: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -254,6 +259,30 @@ private fun BookingSuccessScreen(
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = onGoHome, modifier = Modifier.fillMaxWidth()) {
             Text("На главную")
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = {
+                // Парсим дату и время для Calendar Intent
+                try {
+                    val formatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+                    val startDate = formatter.parse("$date $time")
+                    val startMillis = startDate?.time ?: return@OutlinedButton
+                    val endMillis = startMillis + service.duration * 60_000L
+
+                    val intent = Intent(Intent.ACTION_INSERT).apply {
+                        data = CalendarContract.Events.CONTENT_URI
+                        putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+                        putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
+                        putExtra(CalendarContract.Events.TITLE, "Запись: ${service.name}")
+                        putExtra(CalendarContract.Events.DESCRIPTION, "Цена: ${service.price} ₽")
+                    }
+                    context.startActivity(intent)
+                } catch (_: Exception) {}
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Добавить в календарь")
         }
     }
 }
