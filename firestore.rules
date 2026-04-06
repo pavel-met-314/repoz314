@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Вспомогательные функции ──────────────────────────────────────────────
+
+    // Проверяем, что пользователь авторизован
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Проверяем роль через документ users
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Проверяем, что это владелец записи
+    function isOwner(clientId) {
+      return isAuth() && request.auth.uid == clientId;
+    }
+
+    // ── Коллекция users ──────────────────────────────────────────────────────
+    match /users/{userId} {
+      // Читать свой профиль может только сам пользователь или админ
+      allow read: if isOwner(userId) || isAdmin();
+      // Создавать может только сам пользователь (при регистрации)
+      allow create: if isAuth() && request.auth.uid == userId;
+      // Обновлять — только сам пользователь или админ
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Коллекция services (услуги) ──────────────────────────────────────────
+    match /services/{serviceId} {
+      // Читать могут все авторизованные
+      allow read: if isAuth();
+      // Изменять только админ
+      allow write: if isAdmin();
+    }
+
+    // ── Коллекция schedule (расписание) ─────────────────────────────────────
+    match /schedule/{date} {
+      // Читать могут все авторизованные (нужно для расчёта слотов)
+      allow read: if isAuth();
+      // Изменять только админ
+      allow write: if isAdmin();
+    }
+
+    // ── Коллекция blocks (личные блоки) ─────────────────────────────────────
+    match /blocks/{blockId} {
+      // Читать могут все авторизованные (нужно для расчёта слотов)
+      allow read: if isAuth();
+      // Изменять только админ
+      allow write: if isAdmin();
+    }
+
+    // ── Коллекция appointments (записи) ─────────────────────────────────────
+    match /appointments/{appointmentId} {
+      // Читать: клиент видит только свои записи, админ видит все
+      allow read: if isAdmin() ||
+        (isAuth() && resource.data.clientId == request.auth.uid);
+      // Создавать: авторизованный пользователь может создать запись на себя
+      allow create: if isAuth() &&
+        request.resource.data.clientId == request.auth.uid;
+      // Обновлять: только админ (например, отмена)
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Коллекция clients_history (история клиентов) ─────────────────────────
+    match /clients_history/{clientId} {
+      // Читать: клиент видит свою историю, админ — все
+      allow read: if isAdmin() || isOwner(clientId);
+      // Создавать/обновлять: клиент свою запись или админ
+      // (history обновляется автоматически при booking)
+      allow create: if isAuth() && request.auth.uid == clientId;
+      allow update: if isAdmin() || isOwner(clientId);
+      allow delete: if isAdmin();
+    }
+
+    // ── Коллекция portfolio (портфолио) ──────────────────────────────────────
+    match /portfolio/{photoId} {
+      // Читать может любой авторизованный
+      allow read: if isAuth();
+      // Изменять только админ
+      allow write: if isAdmin();
+    }
+  }
+}
+
