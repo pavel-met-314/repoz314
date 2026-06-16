@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">project</string>
+    <string name="app_name">Parikmarium</string>
+    <string name="brand_tagline">Морской стиль красоты</string>
+    <string name="brand_tagline_admin">Панель администратора</string>
 </resources>

@@ -17,7 +17,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val title = remoteMessage.notification?.title
             ?: remoteMessage.data["title"]
-            ?: "Парикмахерская"
+            ?: "Parikmarium"
         val body = remoteMessage.notification?.body
             ?: remoteMessage.data["body"]
             ?: ""
