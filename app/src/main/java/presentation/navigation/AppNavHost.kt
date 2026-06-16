@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import domain.model.Service
+import com.example.project.notification.AppointmentStatusScheduler
 import presentation.screens.AdminDashboardScreen
 import presentation.screens.BookingScreen
 import presentation.screens.LoginScreen
@@ -45,6 +47,20 @@ fun AppNavHost(
     val portfolioViewModel: PortfolioViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
     val sessionState by authViewModel.sessionState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(sessionState) {
+        when (val s = sessionState) {
+            is SessionState.AuthenticatedClient -> {
+                AppointmentStatusScheduler.schedule(context, s.user.id)
+            }
+            is SessionState.Unauthenticated -> {
+                AppointmentStatusScheduler.cancel(context)
+            }
+            else -> Unit
+        }
+    }
+
     LaunchedEffect(sessionState) {
         if (sessionState is SessionState.Unauthenticated) {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
