@@ -1,5 +1,6 @@
 package presentation.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,8 +9,10 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import presentation.ui.AppointmentCard
 import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.MyAppointmentsViewModel
 import presentation.viewmodel.SessionState
@@ -32,9 +35,8 @@ fun MyAppointmentsScreen(
     val tabs = listOf("Активные", "История")
 
     val dbDateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
-    val displayDateFormat = remember { SimpleDateFormat("dd MMMM yyyy", Locale("ru")) }
+    val displayDateFormat = remember { SimpleDateFormat("dd MMMM yyyy", Locale.forLanguageTag("ru")) }
 
-    // Загружаем записи при открытии экрана
     LaunchedEffect(sessionState) {
         val clientId = when (val s = sessionState) {
             is SessionState.AuthenticatedClient -> s.user.id
@@ -44,8 +46,23 @@ fun MyAppointmentsScreen(
         clientId?.let { myAppointmentsViewModel.loadAppointments(it) }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = selectedTab) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Text(
+            text = "Мои записи",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+        )
+
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.primary
+        ) {
             tabs.forEachIndexed { index, title ->
                 Tab(
                     selected = selectedTab == index,
@@ -63,7 +80,7 @@ fun MyAppointmentsScreen(
             when {
                 isLoading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
                 error != null -> {
@@ -78,7 +95,7 @@ fun MyAppointmentsScreen(
                             Text(
                                 text = error ?: "",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(onClick = { myAppointmentsViewModel.refresh() }) {
@@ -97,14 +114,19 @@ fun MyAppointmentsScreen(
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = if (selectedTab == 0) "📋" else "📜",
-                                    style = MaterialTheme.typography.displayMedium
+                                    text = if (selectedTab == 0) "Нет активных записей" else "История пуста",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = if (selectedTab == 0) "Активных записей нет" else "История пуста",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    text = if (selectedTab == 0) {
+                                        "Запишитесь на услугу в разделе «Услуги»"
+                                    } else {
+                                        "Завершённые и отменённые записи появятся здесь"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                 )
                             }
                         }
@@ -113,57 +135,19 @@ fun MyAppointmentsScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             items(filtered) { appointment ->
                                 val displayDate = try {
                                     val parsed = dbDateFormat.parse(appointment.date)
                                     if (parsed != null) displayDateFormat.format(parsed) else appointment.date
-                                } catch (_: Exception) { appointment.date }
-
-                                Card(modifier = Modifier.fillMaxWidth()) {
-                                    Column(modifier = Modifier.padding(16.dp)) {
-                                        Text(
-                                            text = appointment.serviceName,
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
-                                        Spacer(modifier = Modifier.height(6.dp))
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Column {
-                                                Text(
-                                                    text = "📅 $displayDate",
-                                                    style = MaterialTheme.typography.bodyMedium
-                                                )
-                                                Text(
-                                                    text = "🕐 ${appointment.time}  ·  ${appointment.duration} мин",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                                )
-                                            }
-                                            val (statusText, statusColor) = when (appointment.status) {
-                                                "active" -> "Активна" to MaterialTheme.colorScheme.primary
-                                                "cancelled" -> "Отменена" to MaterialTheme.colorScheme.error
-                                                "completed" -> "Завершена" to MaterialTheme.colorScheme.secondary
-                                                else -> appointment.status to MaterialTheme.colorScheme.onSurface
-                                            }
-                                            Surface(
-                                                shape = MaterialTheme.shapes.small,
-                                                color = statusColor.copy(alpha = 0.12f)
-                                            ) {
-                                                Text(
-                                                    text = statusText,
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = statusColor,
-                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                                )
-                                            }
-                                        }
-                                    }
+                                } catch (_: Exception) {
+                                    appointment.date
                                 }
+                                AppointmentCard(
+                                    appointment = appointment,
+                                    displayDate = displayDate
+                                )
                             }
                         }
                     }

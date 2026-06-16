@@ -3,20 +3,25 @@ package presentation.screens
 import android.content.Intent
 import android.provider.CalendarContract
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.project.notification.ReminderScheduler
 import domain.model.Service
+import presentation.ui.MarineGradientBackground
 import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.BookingUiState
 import presentation.viewmodel.BookingViewModel
@@ -39,7 +44,6 @@ fun BookingScreen(
     val isLoadingSlots by bookingViewModel.isLoadingSlots.collectAsState()
     val context = LocalContext.current
 
-    // Индекс выбранного дня (0 = сегодня, ..., 13)
     var selectedDayIndex by remember { mutableStateOf<Int?>(null) }
     var selectedSlot by remember { mutableStateOf<String?>(null) }
     var showSuccess by remember { mutableStateOf(false) }
@@ -48,7 +52,6 @@ fun BookingScreen(
     val displayFormatter = SimpleDateFormat("dd.MM", Locale.getDefault())
     val displayFullFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
 
-    // Генерируем 14 дат начиная с сегодня
     val dates: List<Calendar> = remember {
         (0..13).map { offset ->
             Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, offset) }
@@ -59,7 +62,6 @@ fun BookingScreen(
     val selectedDateStr = selectedCalendar?.let { dbFormatter.format(it.time) }
     val selectedDateDisplay = selectedCalendar?.let { displayFullFormatter.format(it.time) } ?: ""
 
-    // При изменении даты загружаем слоты
     LaunchedEffect(selectedDateStr) {
         selectedDateStr?.let { date ->
             selectedSlot = null
@@ -67,10 +69,8 @@ fun BookingScreen(
         }
     }
 
-    // Когда запись успешна — показываем экран подтверждения
     LaunchedEffect(uiState) {
         if (uiState is BookingUiState.Success) {
-            // Планируем напоминание за день до записи
             val date = selectedDateStr
             val slot = selectedSlot
             if (date != null && slot != null) {
@@ -100,14 +100,18 @@ fun BookingScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Запись на услугу") },
+                title = { Text("Запись") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
             )
         }
     ) { innerPadding ->
@@ -117,29 +121,38 @@ fun BookingScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            // Информация об услуге
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = service.name, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = service.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "${service.price} ₽ · ${service.duration} мин",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Выберите дату", style = MaterialTheme.typography.titleSmall)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Выберите дату",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Горизонтальный список дат
-            androidx.compose.foundation.lazy.LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(dates.size) { index ->
                     val cal = dates[index]
                     val isSelected = index == selectedDayIndex
@@ -152,16 +165,25 @@ fun BookingScreen(
                                 style = MaterialTheme.typography.labelMedium
                             )
                         },
-                        modifier = Modifier.height(48.dp)
+                        modifier = Modifier.height(44.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             if (selectedDayIndex != null) {
-                Text("Доступное время", style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Доступное время",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(10.dp))
 
                 when {
                     isLoadingSlots -> {
@@ -171,20 +193,27 @@ fun BookingScreen(
                                 .height(120.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator()
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         }
                     }
                     availableSlots.isEmpty() -> {
-                        Text(
-                            "На этот день нет доступного времени",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium,
+                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+                        ) {
+                            Text(
+                                text = "На этот день нет доступного времени",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.weight(1f))
                     }
                     else -> {
                         LazyVerticalGrid(
-                            columns = GridCells.Adaptive(72.dp),
+                            columns = GridCells.Adaptive(76.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier
@@ -195,7 +224,12 @@ fun BookingScreen(
                                 FilterChip(
                                     selected = slot == selectedSlot,
                                     onClick = { selectedSlot = slot },
-                                    label = { Text(slot) }
+                                    label = { Text(slot) },
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary
+                                    )
                                 )
                             }
                         }
@@ -205,7 +239,6 @@ fun BookingScreen(
                 Spacer(modifier = Modifier.weight(1f))
             }
 
-            // Ошибка
             if (uiState is BookingUiState.Error) {
                 Text(
                     text = (uiState as BookingUiState.Error).message,
@@ -215,7 +248,6 @@ fun BookingScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // Кнопка записаться
             Button(
                 onClick = {
                     val date = selectedDateStr ?: return@Button
@@ -230,12 +262,18 @@ fun BookingScreen(
                 enabled = selectedDayIndex != null && selectedSlot != null && uiState !is BookingUiState.Loading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp)
+                    .height(52.dp)
+                    .padding(vertical = 16.dp),
+                shape = MaterialTheme.shapes.large
             ) {
                 if (uiState is BookingUiState.Loading) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 } else {
-                    Text("Записаться")
+                    Text("Записаться", style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
@@ -251,52 +289,77 @@ private fun BookingSuccessScreen(
 ) {
     val context = LocalContext.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("✅", style = MaterialTheme.typography.displayLarge)
-        Spacer(modifier = Modifier.height(24.dp))
-        Text("Вы записаны!", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                InfoRow("Услуга", service.name)
-                InfoRow("Дата", date)
-                InfoRow("Время", time)
-                InfoRow("Цена", "${service.price} ₽")
-            }
-        }
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = onGoHome, modifier = Modifier.fillMaxWidth()) {
-            Text("На главную")
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = {
-                // Парсим дату и время для Calendar Intent
-                try {
-                    val formatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-                    val startDate = formatter.parse("$date $time")
-                    val startMillis = startDate?.time ?: return@OutlinedButton
-                    val endMillis = startMillis + service.duration * 60_000L
-
-                    val intent = Intent(Intent.ACTION_INSERT).apply {
-                        data = CalendarContract.Events.CONTENT_URI
-                        putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
-                        putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
-                        putExtra(CalendarContract.Events.TITLE, "Запись: ${service.name}")
-                        putExtra(CalendarContract.Events.DESCRIPTION, "Цена: ${service.price} ₽")
-                    }
-                    context.startActivity(intent)
-                } catch (_: Exception) {}
-            },
-            modifier = Modifier.fillMaxWidth()
+    MarineGradientBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Добавить в календарь")
+            Icon(
+                imageVector = Icons.Filled.CheckCircle,
+                contentDescription = null,
+                modifier = Modifier.size(72.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Вы записаны!",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.extraLarge,
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                tonalElevation = 2.dp
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    InfoRow("Услуга", service.name)
+                    InfoRow("Дата", date)
+                    InfoRow("Время", time)
+                    InfoRow("Цена", "${service.price} ₽")
+                }
+            }
+            Spacer(modifier = Modifier.height(28.dp))
+            Button(
+                onClick = onGoHome,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Text("На главную")
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(
+                onClick = {
+                    try {
+                        val formatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+                        val startDate = formatter.parse("$date $time")
+                        val startMillis = startDate?.time ?: return@OutlinedButton
+                        val endMillis = startMillis + service.duration * 60_000L
+
+                        val intent = Intent(Intent.ACTION_INSERT).apply {
+                            data = CalendarContract.Events.CONTENT_URI
+                            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+                            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
+                            putExtra(CalendarContract.Events.TITLE, "Parikmarium: ${service.name}")
+                            putExtra(CalendarContract.Events.DESCRIPTION, "Цена: ${service.price} ₽")
+                        }
+                        context.startActivity(intent)
+                    } catch (_: Exception) {}
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Text("Добавить в календарь")
+            }
         }
     }
 }
@@ -306,14 +369,18 @@ private fun InfoRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Text(value, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium
+        )
     }
 }

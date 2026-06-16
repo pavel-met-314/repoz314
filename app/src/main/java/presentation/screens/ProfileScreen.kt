@@ -1,10 +1,18 @@
 package presentation.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.SessionState
@@ -29,41 +37,109 @@ fun ProfileScreen(authViewModel: AuthViewModel) {
         else -> ""
     }
 
+    val initials = userName.trim()
+        .split(" ")
+        .take(2)
+        .mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }
+        .joinToString("")
+        .ifEmpty { "?" }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
-        Text(text = "Профиль", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(24.dp))
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Имя", style = MaterialTheme.typography.labelSmall)
-                Text(text = userName.ifEmpty { "—" }, style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(text = "Email", style = MaterialTheme.typography.labelSmall)
-                Text(text = userEmail.ifEmpty { "—" }, style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(text = "Телефон", style = MaterialTheme.typography.labelSmall)
-                Text(text = userPhone.ifEmpty { "—" }, style = MaterialTheme.typography.bodyLarge)
+        Surface(
+            modifier = Modifier.size(88.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = initials,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = userName.ifEmpty { "Гость" },
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = "Профиль клиента",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
 
-        Button(
+        Spacer(modifier = Modifier.height(28.dp))
+
+        ProfileInfoRow(icon = Icons.Filled.Person, label = "Имя", value = userName)
+        Spacer(modifier = Modifier.height(10.dp))
+        ProfileInfoRow(icon = Icons.Filled.Email, label = "Email", value = userEmail)
+        Spacer(modifier = Modifier.height(10.dp))
+        ProfileInfoRow(icon = Icons.Filled.Phone, label = "Телефон", value = userPhone)
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        OutlinedButton(
             onClick = { authViewModel.logout() },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error
-            )
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = MaterialTheme.shapes.large,
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
         ) {
+            Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
             Text("Выйти")
         }
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
-
+@Composable
+private fun ProfileInfoRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.width(14.dp))
+            Column {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = value.ifEmpty { "—" },
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
