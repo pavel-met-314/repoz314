@@ -18,6 +18,7 @@ import presentation.screens.RegisterScreen
 import presentation.screens.ServicesScreen
 import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.PortfolioViewModel
+import presentation.viewmodel.SessionState
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -42,6 +43,22 @@ fun AppNavHost(
 
     // Общий ViewModel для портфолио (чтобы не перезагружать при переходах)
     val portfolioViewModel: PortfolioViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
+    val sessionState by authViewModel.sessionState.collectAsState()
+    LaunchedEffect(sessionState) {
+        if (sessionState is SessionState.Unauthenticated) {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+            if (currentRoute != null &&
+                currentRoute != Screen.Login.route &&
+                currentRoute != Screen.Register.route
+            ) {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+    }
 
     NavHost(
         navController = navController,
