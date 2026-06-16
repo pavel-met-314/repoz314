@@ -28,6 +28,14 @@ class AppointmentRepository(private val db: FirebaseFirestore = FirebaseFirestor
         return snapshot.documents.mapNotNull { it.toObject(Appointment::class.java) }
     }
 
+    /** Все записи на дату (любой статус) — для экрана админки */
+    suspend fun getAppointmentsForAdmin(date: String): List<Appointment> {
+        val snapshot = db.collection("appointments")
+            .whereEqualTo("date", date)
+            .get().await()
+        return snapshot.documents.mapNotNull { it.toObject(Appointment::class.java) }
+    }
+
     suspend fun createAppointment(appointment: Appointment) {
         val docRef = db.collection("appointments").document()
         val withId = appointment.copy(id = docRef.id)

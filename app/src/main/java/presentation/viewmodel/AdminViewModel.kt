@@ -100,7 +100,7 @@ class AdminViewModel(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                _selectedDateAppointments.value = repository.getAppointments(date)
+                _selectedDateAppointments.value = repository.getAppointmentsForAdmin(date)
             } catch (e: Exception) {
                 _error.value = e.message
             } finally {
