@@ -60,6 +60,7 @@ class AuthViewModel(
             _uiState.value = AuthUiState.Loading
             try {
                 val user = repository.login(email, password)
+                updateSessionFromUser(user)
                 _uiState.value = AuthUiState.Success(user)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState.Error(e.message ?: "Ошибка входа")
@@ -72,10 +73,19 @@ class AuthViewModel(
             _uiState.value = AuthUiState.Loading
             try {
                 val user = repository.register(email, password, name, phone)
+                updateSessionFromUser(user)
                 _uiState.value = AuthUiState.Success(user)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState.Error(e.message ?: "Ошибка регистрации")
             }
+        }
+    }
+
+    private fun updateSessionFromUser(user: User) {
+        _sessionState.value = if (user.role == "admin") {
+            SessionState.AuthenticatedAdmin(user)
+        } else {
+            SessionState.AuthenticatedClient(user)
         }
     }
 
@@ -89,4 +99,3 @@ class AuthViewModel(
         _uiState.value = AuthUiState.Idle
     }
 }
-
