@@ -55,11 +55,24 @@ class AuthViewModel(
         }
     }
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String, asAdmin: Boolean = false) {
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
             try {
                 val user = repository.login(email, password)
+                val isAdminUser = user.role == "admin"
+                if (asAdmin != isAdminUser) {
+                    repository.logout()
+                    _sessionState.value = SessionState.Unauthenticated
+                    _uiState.value = AuthUiState.Error(
+                        if (asAdmin) {
+                            "У вас нет прав администратора"
+                        } else {
+                            "Для входа администратора отметьте «Вход как админ»"
+                        }
+                    )
+                    return@launch
+                }
                 updateSessionFromUser(user)
                 _uiState.value = AuthUiState.Success(user)
             } catch (e: Exception) {

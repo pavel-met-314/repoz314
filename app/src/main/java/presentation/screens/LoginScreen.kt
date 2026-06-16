@@ -96,7 +96,7 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { authViewModel.login(email, password) },
+                onClick = { authViewModel.login(email, password, asAdmin = isAdmin) },
                 enabled = isFormValid && uiState !is AuthUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             ) {
