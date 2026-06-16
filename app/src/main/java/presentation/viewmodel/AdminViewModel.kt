@@ -64,6 +64,11 @@ class AdminViewModel(
     private val _successMessage = MutableStateFlow<String?>(null)
     val successMessage: StateFlow<String?> = _successMessage
 
+    data class DayOffConflict(val schedule: Schedule, val activeAppointments: List<Appointment>)
+
+    private val _dayOffConflict = MutableStateFlow<DayOffConflict?>(null)
+    val dayOffConflict: StateFlow<DayOffConflict?> = _dayOffConflict
+
     // ─── Загрузка записей на сегодня ──────────────────────────────────────────
 
     fun loadTodayAppointments() {
@@ -152,12 +157,45 @@ class AdminViewModel(
     fun saveSchedule(schedule: Schedule) {
         viewModelScope.launch {
             try {
-                repository.saveSchedule(schedule)
-                _schedule.value = schedule
-                _successMessage.value = "Расписание сохранено"
+                if (!schedule.isWorkingDay) {
+                    val active = repository.getAppointments(schedule.date)
+                    if (active.isNotEmpty()) {
+                        _dayOffConflict.value = DayOffConflict(schedule, active)
+                        return@launch
+                    }
+                }
+                persistSchedule(schedule)
             } catch (e: Exception) {
                 _error.value = e.message
             }
+        }
+    }
+
+    fun confirmDayOffAndCancelAppointments() {
+        val conflict = _dayOffConflict.value ?: return
+        viewModelScope.launch {
+            try {
+                conflict.activeAppointments.forEach { repository.cancelAppointment(it.id) }
+                persistSchedule(conflict.schedule)
+                _dayOffConflict.value = null
+                loadAppointmentsForDate(conflict.schedule.date)
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
+    }
+
+    fun dismissDayOffConflict() {
+        _dayOffConflict.value = null
+    }
+
+    private suspend fun persistSchedule(schedule: Schedule) {
+        repository.saveSchedule(schedule)
+        _schedule.value = schedule
+        _successMessage.value = if (!schedule.isWorkingDay) {
+            "Выходной сохранён"
+        } else {
+            "Расписание сохранено"
         }
     }
 

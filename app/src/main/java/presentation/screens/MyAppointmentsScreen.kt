@@ -10,8 +10,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.project.ui.theme.ProjectTheme
+import domain.model.Appointment
 import presentation.ui.AppointmentCard
 import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.MyAppointmentsViewModel
@@ -46,6 +49,64 @@ fun MyAppointmentsScreen(
         clientId?.let { myAppointmentsViewModel.loadAppointments(it) }
     }
 
+    MyAppointmentsContent(
+        selectedTab = selectedTab,
+        onTabSelected = { selectedTab = it },
+        tabs = tabs,
+        appointments = appointments,
+        isLoading = isLoading,
+        isRefreshing = isRefreshing,
+        error = error,
+        onRefresh = { myAppointmentsViewModel.refresh() },
+        dbDateFormat = dbDateFormat,
+        displayDateFormat = displayDateFormat
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MyAppointmentsScreenPreview() {
+    ProjectTheme {
+        MyAppointmentsContent(
+            selectedTab = 0,
+            onTabSelected = {},
+            tabs = listOf("Активные", "История"),
+            appointments = listOf(
+                Appointment(
+                    id = "1",
+                    clientName = "Анна",
+                    clientPhone = "+7 900 000-00-00",
+                    serviceName = "Стрижка",
+                    date = "2026-06-16",
+                    time = "14:00",
+                    duration = 30,
+                    status = "active"
+                )
+            ),
+            isLoading = false,
+            isRefreshing = false,
+            error = null,
+            onRefresh = {},
+            dbDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()),
+            displayDateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.forLanguageTag("ru"))
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MyAppointmentsContent(
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    tabs: List<String>,
+    appointments: List<Appointment>,
+    isLoading: Boolean,
+    isRefreshing: Boolean,
+    error: String?,
+    onRefresh: () -> Unit,
+    dbDateFormat: SimpleDateFormat,
+    displayDateFormat: SimpleDateFormat
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,7 +127,7 @@ fun MyAppointmentsScreen(
             tabs.forEachIndexed { index, title ->
                 Tab(
                     selected = selectedTab == index,
-                    onClick = { selectedTab = index },
+                    onClick = { onTabSelected(index) },
                     text = { Text(title) }
                 )
             }
@@ -74,7 +135,7 @@ fun MyAppointmentsScreen(
 
         PullToRefreshBox(
             isRefreshing = isRefreshing,
-            onRefresh = { myAppointmentsViewModel.refresh() },
+            onRefresh = onRefresh,
             modifier = Modifier.fillMaxSize()
         ) {
             when {
@@ -93,12 +154,12 @@ fun MyAppointmentsScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = error ?: "",
+                                text = error,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button(onClick = { myAppointmentsViewModel.refresh() }) {
+                            Button(onClick = onRefresh) {
                                 Text("Повторить")
                             }
                         }

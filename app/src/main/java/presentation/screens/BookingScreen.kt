@@ -17,8 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.project.ui.theme.ProjectTheme
 import com.example.project.notification.ReminderScheduler
 import domain.model.Service
 import presentation.ui.MarineGradientBackground
@@ -277,6 +279,19 @@ fun BookingScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BookingSuccessPreview() {
+    ProjectTheme {
+        BookingSuccessScreen(
+            service = Service(id = "1", name = "Стрижка", price = 800, duration = 30),
+            date = "16.06.2026",
+            time = "14:00",
+            onGoHome = {}
+        )
     }
 }
 

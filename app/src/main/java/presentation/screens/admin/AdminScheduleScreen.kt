@@ -31,6 +31,7 @@ fun AdminScheduleScreen(
     val blocks by adminViewModel.blocks.collectAsState()
     val successMessage by adminViewModel.successMessage.collectAsState()
     val error by adminViewModel.error.collectAsState()
+    val dayOffConflict by adminViewModel.dayOffConflict.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -107,6 +108,30 @@ fun AdminScheduleScreen(
             onSave = { block ->
                 adminViewModel.saveBlock(block)
                 showBlockDialog = false
+            }
+        )
+    }
+
+    dayOffConflict?.let { conflict ->
+        AlertDialog(
+            onDismissRequest = { adminViewModel.dismissDayOffConflict() },
+            title = { Text("Активные записи на выходной") },
+            text = {
+                Text(
+                    text = "На ${selectedDateDisplay.replaceFirstChar { it.uppercase() }} " +
+                        "${conflict.activeAppointments.size} активных записей. " +
+                        "Отменить их и сохранить выходной? Клиенты получат уведомление."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { adminViewModel.confirmDayOffAndCancelAppointments() }) {
+                    Text("Отменить записи")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { adminViewModel.dismissDayOffConflict() }) {
+                    Text("Назад")
+                }
             }
         )
     }

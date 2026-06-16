@@ -12,9 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.project.ui.theme.ProjectTheme
 import domain.model.Portfolio
 import presentation.ui.RemoteImage
 import presentation.viewmodel.PortfolioViewModel
@@ -39,6 +41,34 @@ fun PortfolioScreen(
         )
     }
 
+    PortfolioContent(
+        portfolio = portfolio,
+        isLoading = isLoading,
+        onItemClick = { selectedItem = it }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PortfolioScreenPreview() {
+    ProjectTheme {
+        PortfolioContent(
+            portfolio = listOf(
+                Portfolio(id = "1", imageUrl = "", caption = "Боб-каре", serviceId = null),
+                Portfolio(id = "2", imageUrl = "", caption = "Окрашивание", serviceId = null)
+            ),
+            isLoading = false,
+            onItemClick = {}
+        )
+    }
+}
+
+@Composable
+private fun PortfolioContent(
+    portfolio: List<Portfolio>,
+    isLoading: Boolean,
+    onItemClick: (Portfolio) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -86,7 +116,7 @@ fun PortfolioScreen(
                 items(portfolio) { item ->
                     PortfolioGridItem(
                         portfolio = item,
-                        onClick = { selectedItem = item }
+                        onClick = { onItemClick(item) }
                     )
                 }
             }

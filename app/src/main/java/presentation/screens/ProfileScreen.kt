@@ -13,7 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.project.ui.theme.ProjectTheme
 import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.SessionState
 
@@ -37,6 +39,34 @@ fun ProfileScreen(authViewModel: AuthViewModel) {
         else -> ""
     }
 
+    ProfileScreenContent(
+        userName = userName,
+        userEmail = userEmail,
+        userPhone = userPhone,
+        onLogout = { authViewModel.logout() }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfileScreenPreview() {
+    ProjectTheme {
+        ProfileScreenContent(
+            userName = "Анна Иванова",
+            userEmail = "anna@example.com",
+            userPhone = "+7 900 000-00-00",
+            onLogout = {}
+        )
+    }
+}
+
+@Composable
+private fun ProfileScreenContent(
+    userName: String,
+    userEmail: String,
+    userPhone: String,
+    onLogout: () -> Unit
+) {
     val initials = userName.trim()
         .split(" ")
         .take(2)
@@ -91,7 +121,7 @@ fun ProfileScreen(authViewModel: AuthViewModel) {
         Spacer(modifier = Modifier.weight(1f))
 
         OutlinedButton(
-            onClick = { authViewModel.logout() },
+            onClick = onLogout,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
