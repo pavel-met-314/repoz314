@@ -4,15 +4,14 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -20,12 +19,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.asImageBitmap
 import domain.model.Portfolio
 import domain.model.Service
+import presentation.ui.ParikmariumTopAppBar
 import presentation.ui.RemoteImage
 import presentation.viewmodel.PortfolioUiState
 import presentation.viewmodel.PortfolioViewModel
@@ -71,18 +73,17 @@ fun AdminPortfolioScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = { Text("Портфолио") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                }
-            )
+            ParikmariumTopAppBar(title = "Портфолио", onBack = onBack)
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showUploadSheet = true }) {
+            FloatingActionButton(
+                onClick = { showUploadSheet = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = MaterialTheme.shapes.large
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Добавить фото")
             }
         }
@@ -93,7 +94,9 @@ fun AdminPortfolioScreen(
                     .fillMaxSize()
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
 
             portfolio.isEmpty() -> Box(
                 modifier = Modifier
@@ -102,21 +105,22 @@ fun AdminPortfolioScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "Нажмите + чтобы добавить первое фото",
+                    text = "Нажмите + чтобы добавить первое фото",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             else -> LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(
-                    start = 12.dp, end = 12.dp,
+                    start = 16.dp,
+                    end = 16.dp,
                     top = innerPadding.calculateTopPadding() + 8.dp,
                     bottom = innerPadding.calculateBottomPadding() + 80.dp
                 ),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(portfolio) { item ->
                     AdminPortfolioItem(
@@ -135,7 +139,11 @@ private fun AdminPortfolioItem(portfolio: Portfolio, onDelete: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f),
-        shape = RoundedCornerShape(12.dp)
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             RemoteImage(
@@ -144,32 +152,35 @@ private fun AdminPortfolioItem(portfolio: Portfolio, onDelete: () -> Unit) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            // Кнопка удаления
-            IconButton(
-                onClick = onDelete,
+            Surface(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(4.dp)
+                    .padding(6.dp),
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f)
             ) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Удалить",
-                    tint = MaterialTheme.colorScheme.error
-                )
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Удалить",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
-            // Подпись
             if (portfolio.caption.isNotEmpty()) {
-                Surface(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.BottomCenter),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
+                        .align(Alignment.BottomCenter)
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = portfolio.caption,
                         style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        maxLines = 1
+                        color = Color.White,
+                        maxLines = 2
                     )
                 }
             }
@@ -207,17 +218,16 @@ private fun UploadPhotoSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(160.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(MaterialTheme.shapes.large)
                         .border(
                             width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline,
-                            shape = RoundedCornerShape(12.dp)
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                            shape = MaterialTheme.shapes.large
                         )
                         .clickable { launcher.launch("image/*") },
                     contentAlignment = Alignment.Center
                 ) {
                     if (selectedUri != null) {
-                        // Показываем выбранное локальное изображение
                         val bitmap = remember(selectedUri) {
                             try {
                                 val inputStream = context.contentResolver.openInputStream(selectedUri!!)
@@ -231,7 +241,7 @@ private fun UploadPhotoSheet(
                                 bitmap = bitmap,
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(12.dp))
+                                modifier = Modifier.fillMaxSize().clip(MaterialTheme.shapes.large)
                             )
                         }
                     } else {
@@ -239,14 +249,14 @@ private fun UploadPhotoSheet(
                             Icon(
                                 Icons.Default.Add,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(36.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                "Выбрать из галереи",
+                                text = "Выбрать из галереи",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -290,6 +300,7 @@ private fun UploadPhotoSheet(
                     onValueChange = { caption = it },
                     label = { Text("Подпись (необязательно)") },
                     singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -313,7 +324,11 @@ private fun UploadPhotoSheet(
                 enabled = selectedUri != null && uploadState !is PortfolioUiState.Loading
             ) {
                 if (uploadState is PortfolioUiState.Loading) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 } else {
                     Text("Загрузить")
                 }

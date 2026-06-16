@@ -5,16 +5,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import domain.model.Block
 import domain.model.Schedule
+import presentation.ui.MarineFilterChip
+import presentation.ui.ParikmariumTopAppBar
 import presentation.viewmodel.AdminViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -110,15 +112,9 @@ fun AdminScheduleScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = { Text("Расписание") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                }
-            )
+            ParikmariumTopAppBar(title = "Расписание", onBack = onBack)
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
@@ -131,35 +127,41 @@ fun AdminScheduleScreen(
             // Выбор даты
             item {
                 LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(dates.size) { index ->
                         val cal = dates[index]
-                        FilterChip(
+                        MarineFilterChip(
                             selected = index == selectedDayIndex,
-                            onClick = { selectedDayIndex = index },
-                            label = { Text(displayFormatter.format(cal.time)) }
+                            label = displayFormatter.format(cal.time),
+                            onClick = { selectedDayIndex = index }
                         )
                     }
                 }
-                HorizontalDivider()
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             }
 
-            // Заголовок даты
             item {
                 Text(
                     text = selectedDateDisplay.replaceFirstChar { it.uppercase() },
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(16.dp)
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                 )
             }
 
-            // Переключатель рабочий/выходной
             item {
-                Card(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    shape = MaterialTheme.shapes.large
+                ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -239,7 +241,8 @@ fun AdminScheduleScreen(
                                     )
                                 )
                             },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium
                         ) {
                             Text("Сохранить расписание")
                         }
@@ -257,9 +260,9 @@ fun AdminScheduleScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Личные блоки", style = MaterialTheme.typography.titleSmall)
+                    Text("Личные блоки", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
                     TextButton(onClick = { showBlockDialog = true }) {
-                        Text("+ Добавить")
+                        Text("+ Добавить", color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -267,9 +270,9 @@ fun AdminScheduleScreen(
             if (blocks.isEmpty()) {
                 item {
                     Text(
-                        "Блоков нет",
+                        text = "Блоков нет",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
@@ -322,21 +325,23 @@ private fun TimePickerButton(
 
     OutlinedButton(
         onClick = { showDialog = true },
-        modifier = modifier
+        modifier = modifier,
+        shape = MaterialTheme.shapes.medium
     ) {
         Icon(
             Icons.Default.DateRange,
             contentDescription = null,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.secondary
         )
         Spacer(modifier = Modifier.width(4.dp))
         Column(horizontalAlignment = Alignment.Start) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Text(text = time, style = MaterialTheme.typography.titleSmall)
+            Text(text = time, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -346,7 +351,12 @@ private fun BlockCard(block: Block, onDelete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        shape = MaterialTheme.shapes.large
     ) {
         Row(
             modifier = Modifier
@@ -358,12 +368,13 @@ private fun BlockCard(block: Block, onDelete: () -> Unit) {
             Column {
                 Text(
                     text = block.reason.ifEmpty { "Без названия" },
-                    style = MaterialTheme.typography.titleSmall
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = "${block.startTime} – ${block.endTime}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(onClick = onDelete) {
