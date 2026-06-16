@@ -4,6 +4,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import domain.model.Appointment
 import domain.model.Block
 import domain.model.Schedule
+import domain.util.SlotCalculator
 import kotlinx.coroutines.tasks.await
 
 class AppointmentRepository(private val db: FirebaseFirestore = FirebaseFirestore.getInstance()) {
@@ -172,70 +173,15 @@ class AppointmentRepository(private val db: FirebaseFirestore = FirebaseFirestor
 
     /** Вычисляет доступные слоты на дату для услуги с указанной длительностью */
     suspend fun getAvailableSlots(date: String, serviceDuration: Int): List<String> {
-        val schedule = getSchedule(date) ?: return emptyList()
-        if (!schedule.isWorkingDay) return emptyList()
-
-        val startTime = schedule.startTime ?: return emptyList()
-        val endTime = schedule.endTime ?: return emptyList()
-
-        val allSlots = generateSlots(startTime, endTime, 30)
-
-        // Убираем перерыв
-        val breakSlots: Set<String> = if (schedule.hasBreak &&
-            schedule.breakStart != null && schedule.breakEnd != null
-        ) {
-            generateSlots(schedule.breakStart, schedule.breakEnd, 30).toSet()
-        } else emptySet()
-
-        // Убираем личные блоки
+        val schedule = getSchedule(date)
         val blocks = getBlocks(date)
-        val blockedSlots: Set<String> = blocks.flatMap { block ->
-            generateSlots(block.startTime, block.endTime, 30)
-        }.toSet()
-
-        // Убираем занятые записями слоты
         val appointments = getAppointments(date)
-        val appointmentSlots: Set<String> = appointments.flatMap { appt ->
-            generateSlots(appt.time, addMinutes(appt.time, appt.duration), 30)
-        }.toSet()
-
-        val busySlots = breakSlots + blockedSlots + appointmentSlots
-
-        // Оставляем только слоты, куда целиком помещается услуга
-        val workEnd = toMinutes(endTime)
-        return allSlots.filter { slot ->
-            val slotStart = toMinutes(slot)
-            val slotEnd = slotStart + serviceDuration
-            slotEnd <= workEnd && !busySlots.contains(slot) &&
-                // все 30-минутные подслоты внутри услуги должны быть свободны
-                generateSlots(slot, addMinutes(slot, serviceDuration), 30).none { it in busySlots }
-        }
-    }
-
-    private fun generateSlots(from: String, to: String, stepMinutes: Int): List<String> {
-        val result = mutableListOf<String>()
-        var current = toMinutes(from)
-        val end = toMinutes(to)
-        while (current < end) {
-            result.add(fromMinutes(current))
-            current += stepMinutes
-        }
-        return result
-    }
-
-    private fun toMinutes(time: String): Int {
-        val parts = time.split(":")
-        return parts[0].toInt() * 60 + parts[1].toInt()
-    }
-
-    private fun fromMinutes(minutes: Int): String {
-        val h = minutes / 60
-        val m = minutes % 60
-        return "%02d:%02d".format(h, m)
-    }
-
-    private fun addMinutes(time: String, minutes: Int): String {
-        return fromMinutes(toMinutes(time) + minutes)
+        return SlotCalculator.calculateAvailableSlots(
+            schedule = schedule,
+            blocks = blocks,
+            appointments = appointments,
+            serviceDuration = serviceDuration
+        )
     }
 }
 

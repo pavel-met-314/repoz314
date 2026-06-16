@@ -17,8 +17,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.project.ui.theme.ProjectTheme
 import domain.model.Service
 import presentation.viewmodel.PortfolioViewModel
 import presentation.viewmodel.ServiceUiState
@@ -101,6 +103,45 @@ fun ServiceListScreen(
             val message = (uiState as ServiceUiState.Error).message
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(text = "Ошибка: $message", color = MaterialTheme.colorScheme.error)
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ServiceListPreview() {
+    val services = listOf(
+        Service(id = "1", name = "Стрижка", price = 800, duration = 30),
+        Service(id = "2", name = "Окрашивание", price = 2500, duration = 90)
+    )
+    ProjectTheme {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            item {
+                Text(
+                    text = "Наши услуги",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+            items(services) { service ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = service.name, style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = "Цена: ${service.price} ₽", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "Длительность: ${service.duration} мин", style = MaterialTheme.typography.bodySmall)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
+                            Text("Записаться")
+                        }
+                    }
+                }
             }
         }
     }
