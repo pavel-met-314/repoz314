@@ -15,14 +15,17 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import domain.model.Appointment
+import com.example.project.R
 import presentation.screens.admin.AdminAppointmentsScreen
 import presentation.screens.admin.AdminClientsScreen
 import presentation.screens.admin.AdminPortfolioScreen
 import presentation.screens.admin.AdminScheduleScreen
 import presentation.screens.admin.AdminServicesScreen
+import presentation.ui.AdminAppointmentCard
 import presentation.viewmodel.AdminViewModel
 import presentation.viewmodel.AuthViewModel
 import presentation.viewmodel.PortfolioViewModel
@@ -30,7 +33,6 @@ import presentation.viewmodel.SessionState
 import java.text.SimpleDateFormat
 import java.util.*
 
-// Разделы нижней навигации Админки
 private enum class AdminSection { DASHBOARD, APPOINTMENTS, SCHEDULE, CLIENTS, SERVICES, PORTFOLIO }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,7 +44,6 @@ fun AdminDashboardScreen(
 ) {
     var currentSection by remember { mutableStateOf(AdminSection.DASHBOARD) }
 
-    // Для дочерних экранов с кнопкой Назад
     when (currentSection) {
         AdminSection.APPOINTMENTS -> {
             AdminAppointmentsScreen(
@@ -82,7 +83,6 @@ fun AdminDashboardScreen(
         else -> Unit
     }
 
-    // ─── Главный Dashboard ───────────────────────────────────────────────────
     val sessionState by authViewModel.sessionState.collectAsState()
     val todayAppointments by adminViewModel.todayAppointments.collectAsState()
     val isLoading by adminViewModel.isLoading.collectAsState()
@@ -110,54 +110,79 @@ fun AdminDashboardScreen(
     val today = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date())
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Панель управления") },
+                title = {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Панель администратора",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = { authViewModel.logout() }) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Выйти")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 8.dp
+            ) {
                 NavigationBarItem(
                     selected = true,
                     onClick = {},
                     icon = { Icon(Icons.Default.Home, null) },
-                    label = { Text("Главная") }
+                    label = { Text("Главная") },
+                    colors = adminNavColors()
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { currentSection = AdminSection.APPOINTMENTS },
                     icon = { Icon(Icons.Default.DateRange, null) },
-                    label = { Text("Записи") }
+                    label = { Text("Записи") },
+                    colors = adminNavColors()
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { currentSection = AdminSection.SCHEDULE },
                     icon = { Icon(Icons.Default.DateRange, null) },
-                    label = { Text("Расписание") }
+                    label = { Text("Расписание") },
+                    colors = adminNavColors()
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { currentSection = AdminSection.CLIENTS },
                     icon = { Icon(Icons.Default.Person, null) },
-                    label = { Text("Клиенты") }
+                    label = { Text("Клиенты") },
+                    colors = adminNavColors()
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { currentSection = AdminSection.SERVICES },
                     icon = { Icon(Icons.Default.Settings, null) },
-                    label = { Text("Услуги") }
+                    label = { Text("Услуги") },
+                    colors = adminNavColors()
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { currentSection = AdminSection.PORTFOLIO },
                     icon = { Icon(Icons.Default.Star, null) },
-                    label = { Text("Фото") }
+                    label = { Text("Фото") },
+                    colors = adminNavColors()
                 )
             }
         }
@@ -169,25 +194,24 @@ fun AdminDashboardScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Добро пожаловать, $adminName!",
-                style = MaterialTheme.typography.headlineSmall
+                text = "Добро пожаловать, $adminName",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
             )
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Сегодня: $today",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Карточки быстрого перехода
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 QuickCard(
                     modifier = Modifier.weight(1f),
-                    title = "Записи на сегодня",
+                    title = "Записи сегодня",
                     value = "${todayAppointments.size}",
                     onClick = { currentSection = AdminSection.APPOINTMENTS }
                 )
@@ -218,7 +242,11 @@ fun AdminDashboardScreen(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-            Text("Ближайшие записи сегодня", style = MaterialTheme.typography.titleSmall)
+            Text(
+                text = "Записи на сегодня",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
             PullToRefreshBox(
@@ -228,28 +256,26 @@ fun AdminDashboardScreen(
             ) {
                 when {
                     isLoading -> Box(
-                        modifier = Modifier.fillMaxWidth().fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
-                    ) { CircularProgressIndicator() }
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
 
                     todayAppointments.isEmpty() -> Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("📋", style = MaterialTheme.typography.displayMedium)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                "На сегодня записей нет",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            )
-                        }
+                        Text(
+                            text = "На сегодня записей нет",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
 
-                    else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         items(todayAppointments.sortedBy { it.time }) { appointment ->
-                            DashboardAppointmentCard(
+                            AdminAppointmentCard(
                                 appointment = appointment,
                                 onCancel = { adminViewModel.cancelAppointment(appointment.id) },
                                 onComplete = { adminViewModel.completeAppointment(appointment.id) }
@@ -263,6 +289,15 @@ fun AdminDashboardScreen(
 }
 
 @Composable
+private fun adminNavColors() = NavigationBarItemDefaults.colors(
+    selectedIconColor = MaterialTheme.colorScheme.primary,
+    selectedTextColor = MaterialTheme.colorScheme.primary,
+    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+)
+
+@Composable
 private fun QuickCard(
     modifier: Modifier = Modifier,
     title: String,
@@ -272,73 +307,25 @@ private fun QuickCard(
     Card(
         modifier = modifier,
         onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
-        }
-    }
-}
-
-@Composable
-private fun DashboardAppointmentCard(
-    appointment: Appointment,
-    onCancel: () -> Unit,
-    onComplete: () -> Unit = {}
-) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = appointment.time,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(text = appointment.serviceName, style = MaterialTheme.typography.titleSmall)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "👤 ${appointment.clientName}", style = MaterialTheme.typography.bodyMedium)
-            Text(
-                text = "📞 ${appointment.clientPhone}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-            if (appointment.status == "active") {
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onComplete,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Завершить")
-                    }
-                    OutlinedButton(
-                        onClick = onCancel,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Отменить")
-                    }
-                }
-            }
         }
     }
 }
