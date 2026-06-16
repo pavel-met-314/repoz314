@@ -43,5 +43,10 @@ class AuthRepository(
     fun isLoggedIn(): Boolean = auth.currentUser != null
 
     fun logout() = auth.signOut()
+
+    suspend fun saveFcmToken(token: String) {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid).update("fcmToken", token).await()
+    }
 }
 

@@ -2,11 +2,14 @@ package presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.messaging.FirebaseMessaging
 import domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import presentation.repository.AuthRepository
+import kotlin.coroutines.resume
 
 sealed class AuthUiState {
     object Idle : AuthUiState()
@@ -49,6 +52,7 @@ class AuthViewModel(
                 } else {
                     _sessionState.value = SessionState.AuthenticatedClient(user)
                 }
+                syncFcmToken()
             } catch (e: Exception) {
                 _sessionState.value = SessionState.Unauthenticated
             }
@@ -74,6 +78,7 @@ class AuthViewModel(
                     return@launch
                 }
                 updateSessionFromUser(user)
+                syncFcmToken()
                 _uiState.value = AuthUiState.Success(user)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState.Error(e.message ?: "Ошибка входа")
@@ -87,6 +92,7 @@ class AuthViewModel(
             try {
                 val user = repository.register(email, password, name, phone)
                 updateSessionFromUser(user)
+                syncFcmToken()
                 _uiState.value = AuthUiState.Success(user)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState.Error(e.message ?: "Ошибка регистрации")
@@ -110,5 +116,22 @@ class AuthViewModel(
 
     fun resetState() {
         _uiState.value = AuthUiState.Idle
+    }
+
+    fun syncFcmToken() {
+        viewModelScope.launch {
+            try {
+                val token = fetchFcmToken() ?: return@launch
+                repository.saveFcmToken(token)
+            } catch (_: Exception) {
+                // FCM недоступен без Google Play Services — не блокируем UX
+            }
+        }
+    }
+
+    private suspend fun fetchFcmToken(): String? = suspendCancellableCoroutine { cont ->
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) cont.resume(task.result) else cont.resume(null)
+        }
     }
 }
