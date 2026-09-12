@@ -35,7 +35,7 @@ fun BrandHeader(
             shape = MaterialTheme.shapes.extraLarge
         ),
         shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
         tonalElevation = 2.dp,
         shadowElevation = 8.dp,
     ) {
@@ -52,7 +52,7 @@ fun BrandHeader(
             Text(
                 text = stringResource(R.string.app_name),
                 style = if (compact) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(4.dp))

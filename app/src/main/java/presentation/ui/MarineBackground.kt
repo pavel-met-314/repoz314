@@ -56,15 +56,15 @@ fun MarineGradientBackground(
         androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
             // Большое мягкое пятно бирюзы в верхней части
             drawCircle(
-                color = Color(0xFF48CAE4).copy(alpha = 0.22f),
-                radius = size.width * 0.75f,
-                center = androidx.compose.ui.geometry.Offset(size.width * 0.8f, size.height * 0.12f)
+                color = Color(0xFF48CAE4).copy(alpha = 0.35f),
+                radius = size.width * 0.9f,
+                center = androidx.compose.ui.geometry.Offset(size.width * 0.85f, size.height * 0.1f)
             )
             // Второе пятно — ниже, более прозрачное
             drawCircle(
-                color = Color(0xFF00B4D8).copy(alpha = 0.18f),
-                radius = size.width * 0.6f,
-                center = androidx.compose.ui.geometry.Offset(size.width * 0.15f, size.height * 0.7f)
+                color = Color(0xFF00B4D8).copy(alpha = 0.3f),
+                radius = size.width * 0.85f,
+                center = androidx.compose.ui.geometry.Offset(size.width * 0.1f, size.height * 0.75f)
             )
         }
         content()

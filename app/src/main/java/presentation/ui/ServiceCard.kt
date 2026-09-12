@@ -42,12 +42,12 @@ fun ServiceCard(
         modifier = modifier
             .fillMaxWidth()
             .border(
-                width = 1.dp,
-                color = GlassBorder,
+                width = 2.dp,
+                color = Turquoise,
                 shape = MaterialTheme.shapes.extraLarge
             ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp,
@@ -105,7 +105,7 @@ fun ServiceCard(
 private fun PriceBadge(price: Int) {
     Surface(
         shape = MaterialTheme.shapes.medium,
-        color = Coral.copy(alpha = 0.25f)
+        color = Coral.copy(alpha = 0.35f)
     ) {
         Text(
             text = "$price ₽",
