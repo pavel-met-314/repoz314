@@ -1,6 +1,7 @@
 package presentation.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
@@ -28,7 +29,15 @@ fun BrandHeader(
     compact: Boolean = false
 ) {
     Surface(
+<<<<<<< HEAD
         modifier = modifier.clip(MaterialTheme.shapes.extraLarge),
+=======
+        modifier = modifier.clip(MaterialTheme.shapes.extraLarge).border(
+            width = 1.5.dp,
+            color = com.example.project.ui.theme.GlassBorder,
+            shape = MaterialTheme.shapes.extraLarge
+        ),
+>>>>>>> 79e550e (design: видимые изменения — стекло, градиенты, типографика, королевские шрифты)
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
         tonalElevation = 2.dp,
