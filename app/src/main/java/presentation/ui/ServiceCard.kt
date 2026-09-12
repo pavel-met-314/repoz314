@@ -47,7 +47,7 @@ fun ServiceCard(
                 shape = MaterialTheme.shapes.extraLarge
             ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.78f)
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp,
@@ -65,8 +65,8 @@ fun ServiceCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = service.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {

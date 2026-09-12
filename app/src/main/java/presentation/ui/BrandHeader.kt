@@ -51,7 +51,7 @@ fun BrandHeader(
             Spacer(modifier = Modifier.height(if (compact) 8.dp else 12.dp))
             Text(
                 text = stringResource(R.string.app_name),
-                style = if (compact) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displayMedium,
+                style = if (compact) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displayLarge,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
             )

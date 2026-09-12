@@ -27,8 +27,9 @@ fun MarineGradientBackground(
         Brush.linearGradient(
             colors = listOf(
                 DeepOcean,
-                Color(0xFF08142A),
-                Color(0xFF0A2842)
+                Color(0xFF04122A),
+                Color(0xFF082A40),
+                Color(0xFF103A55)
             ),
             start = Offset(0f, 0f),
             end = Offset(1000f, 1800f)
@@ -55,15 +56,15 @@ fun MarineGradientBackground(
         androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
             // Большое мягкое пятно бирюзы в верхней части
             drawCircle(
-                color = Color(0xFF48CAE4).copy(alpha = 0.18f),
-                radius = size.width * 0.65f,
-                center = androidx.compose.ui.geometry.Offset(size.width * 0.75f, size.height * 0.18f)
+                color = Color(0xFF48CAE4).copy(alpha = 0.22f),
+                radius = size.width * 0.75f,
+                center = androidx.compose.ui.geometry.Offset(size.width * 0.8f, size.height * 0.12f)
             )
             // Второе пятно — ниже, более прозрачное
             drawCircle(
-                color = Color(0xFF00B4D8).copy(alpha = 0.12f),
-                radius = size.width * 0.5f,
-                center = androidx.compose.ui.geometry.Offset(size.width * 0.25f, size.height * 0.65f)
+                color = Color(0xFF00B4D8).copy(alpha = 0.18f),
+                radius = size.width * 0.6f,
+                center = androidx.compose.ui.geometry.Offset(size.width * 0.15f, size.height * 0.7f)
             )
         }
         content()
