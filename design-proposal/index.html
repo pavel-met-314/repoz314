@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parikmarium — Новая волна дизайна</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --navy: #091a33;
+      --deep-navy: #050f1f;
+      --ocean: #0a2842;
+      --turquoise: #00b4d8;
+      --turquoise-bright: #48cae4;
+      --coral: #ff6b6b;
+      --foam: #e8f4f8;
+      --mist: #f5fbfd;
+      --glass: rgba(255, 255, 255, 0.07);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --text-main: #0f2233;
+      --text-muted: #4a6678;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: linear-gradient(170deg, #050f1f 0%, #091a33 40%, #0d2840 70%, #112d4a 100%);
+      color: #e8f4f8;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background waves */
+    .bg-waves {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .bg-waves svg { position: absolute; opacity: 0.35; }
+    .wave-1 { top: -10%; left: -10%; width: 120%; animation: floatWave 24s ease-in-out infinite; }
+    .wave-2 { top: 30%; left: 20%; width: 140%; animation: floatWave 30s ease-in-out infinite reverse; opacity: 0.2; }
+    .wave-3 { top: 60%; left: -20%; width: 130%; animation: floatWave 22s ease-in-out infinite; opacity: 0.15; }
+    @keyframes floatWave {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(3%, 2%) scale(1.02); }
+      66% { transform: translate(-2%, -1%) scale(0.98); }
+    }
+
+    /* Layout */
+    .wrapper { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 48px 20px 80px; }
+
+    /* Header */
+    header { text-align: center; margin-bottom: 48px; }
+    .logo-badge {
+      display: inline-flex; align-items: center; gap: 14px;
+      background: var(--glass); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(14px) saturate(120%);
+      -webkit-backdrop-filter: blur(14px) saturate(120%);
+      border-radius: 100px; padding: 10px 24px 10px 10px;
+      box-shadow: 0 4px 30px rgba(0, 180, 216, 0.15);
+      margin-bottom: 28px; animation: fadeUp 0.8s ease-out both;
+    }
+    .logo-badge svg { width: 48px; height: 48px; flex-shrink: 0; }
+    .logo-badge h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.6rem; font-weight: 300; letter-spacing: 0.08em;
+      color: #fff; line-height: 1.1;
+    }
+    .logo-badge span { display: block; font-family: 'Outfit', sans-serif; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--turquoise-bright); margin-top: 2px; }
+    header p.subtitle {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 1.25rem; color: rgba(255,255,255,0.55); line-height: 1.4;
+      animation: fadeUp 0.9s ease-out 0.15s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 36px; animation: fadeUp 0.9s ease-out 0.3s both; }
+    .tab-btn {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(10px); color: rgba(255,255,255,0.7); font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 500;
+      padding: 8px 18px; border-radius: 100px; cursor: pointer; transition: all 0.25s ease;
+      text-decoration: none;
+    }
+    .tab-btn:hover, .tab-btn.active { background: rgba(0,180,216,0.18); color: #fff; border-color: rgba(0,180,216,0.35); }
+
+    /* Sections (screen mockups) */
+    section.screen { display: none; animation: fadeUp 0.7s ease-out both; }
+    section.screen.active { display: block; }
+
+    /* Card system */
+    .glass-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      backdrop-filter: blur(18px) saturate(130%);
+      -webkit-backdrop-filter: blur(18px) saturate(130%);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+      padding: 28px 24px; margin-bottom: 24px; position: relative; overflow: hidden;
+    }
+    .glass-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    }
+
+    /* Hero on login */
+    .hero-brand { text-align: center; padding: 16px 0 12px; }
+    .hero-brand .brand-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 300; letter-spacing: 0.04em; color: #fff; line-height: 1.1;
+      text-shadow: 0 8px 30px rgba(0,180,216,0.35);
+    }
+    .hero-brand .brand-sub {
+      font-size: 0.85rem; color: rgba(255,255,255,0.45); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 6px;
+    }
+
+    /* Input fields */
+    .field-label { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 8px; }
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%; padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; font-family: 'Outfit', sans-serif; font-size: 0.95rem; outline: none; transition: all 0.2s ease;
+    }
+    input:focus { border-color: var(--turquoise); background: rgba(255,255,255,0.08); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
+    input::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Buttons */
+    .btn {
+      display: inline-block; width: 100%; padding: 16px; border-radius: 16px; border: none; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1rem; letter-spacing: 0.02em; cursor: pointer; transition: all 0.25s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--turquoise) 0%, #0096b4 100%);
+      color: #fff; box-shadow: 0 8px 28px rgba(0,180,216,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(0,180,216,0.45); }
+    .btn-secondary { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+    /* Service cards */
+    .service-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 20px;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 16px; transition: all 0.25s ease;
+    }
+    .service-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.25); }
+    .service-icon { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, var(--turquoise), #0096b4); display: grid; place-items: center; flex-shrink: 0; box-shadow: 0 6px 16px rgba(0,180,216,0.3); }
+    .service-icon svg { width: 22px; height: 22px; color: #fff; }
+    .service-info h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; color: #fff; letter-spacing: 0.02em; }
+    .service-info p { font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-top: 2px; }
+    .service-price { margin-left: auto; text-align: right; font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--turquoise-bright); font-size: 1.05rem; }
+
+    /* Time chips */
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip {
+      padding: 6px 14px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); font-size: 0.8rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Outfit', sans-serif;
+    }
+    .chip:hover, .chip.selected { background: rgba(0,180,216,0.2); border-color: rgba(0,180,216,0.4); color: #fff; }
+
+    /* Portfolio grid */
+    .portfolio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .portfolio-item {
+      aspect-ratio: 1; border-radius: 20px; overflow: hidden; position: relative; cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: all 0.3s ease;
+    }
+    .portfolio-item:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 40px rgba(0,180,216,0.2); }
+    .portfolio-item img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.92); transition: filter 0.3s ease; }
+    .portfolio-item:hover img { filter: brightness(1); }
+    .portfolio-item .overlay {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 16px 10px 8px;
+      background: linear-gradient(0deg, rgba(5,15,31,0.9) 0%, transparent 100%);
+      color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.02em;
+    }
+
+    /* Recommendation text */
+    .rec-section { background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(0,180,216,0.06) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: 28px; padding: 28px; margin-top: 48px; }
+    .rec-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 300; color: #fff; margin-bottom: 16px; letter-spacing: 0.03em; }
+    .rec-section ul { list-style: none; }
+    .rec-section li { position: relative; padding-left: 24px; margin-bottom: 14px; line-height: 1.6; color: rgba(255,255,255,0.75); font-size: 0.95rem; }
+    .rec-section li::before {
+      content: '—'; position: absolute; left: 0; top: 0; color: var(--turquoise); font-weight: 700; font-size: 1.1rem;
+    }
+    .rec-section .tag { display: inline-block; background: rgba(0,180,216,0.15); color: var(--turquoise-bright); padding: 3px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 10px; }
+
+    /* Footer */
+    footer { text-align: center; margin-top: 64px; color: rgba(255,255,255,0.2); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* Small responsive */
+    @media (min-width: 520px) {
+      .wrapper { max-width: 520px; }
+      .hero-brand .brand-title { font-size: 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated decorative waves -->
+  <div class="bg-waves" aria-hidden="true">
+    <svg class="wave-1" viewBox="0 0 1200 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,300 C200,150 400,450 600,300 C800,150 1000,450 1200,300 L1200,600 L0,600 Z" fill="#00b4d8" opacity="0.15"/>
+      <path d="M0,350 C300,200 500,450 800,300 C1000,200 1100,400 1200,350 L1200,600 L0,600 Z" fill="#48cae4" opacity="0.1"/>
+    </svg>
+    <svg class="wave-2" viewBox="0 0 1200 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,400 C250,250 450,500 700,350 C950,200 1100,450 1200,350 L1200,600 L0,600 Z" fill="#00b4d8" opacity="0.12"/>
+    </svg>
+    <svg class="wave-3" viewBox="0 0 1200 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,250 C200,400 400,150 700,300 C900,450 1100,200 1200,300 L1200,600 L0,600 Z" fill="#48cae4" opacity="0.08"/>
+    </svg>
+  </div>
+
+  <div class="wrapper">
+
+    <header>
+      <a href="#" class="logo-badge" aria-label="Parikmarium — главная">
+        <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M8,56C20,48 28,52 40,44C52,36 60,40 72,32V72H8V56Z" fill="#1a3a5c"/>
+          <path d="M8,64C22,54 30,58 44,50C58,42 66,46 80,36V72H8V64Z" fill="#00b4d8"/>
+          <path d="M8,70C18,62 32,66 48,58C64,50 72,54 88,46V72H8V70Z" fill="#48cae4" fill-opacity="0.55"/>
+        </svg>
+        <h1>Parikmarium <span>Морской стиль красоты</span></h1>
+      </a>
+      <p class="subtitle">Новый дизайн для приложения парикмахерской.<br>Морская эстетика, современный интерфейс.</p>
+    </header>
+
+    <nav class="tabs" aria-label="Экранные макеты">
+      <a href="#login" class="tab-btn active" onclick="switchScreen(this,'login')">Вход</a>
+      <a href="#services" class="tab-btn" onclick="switchScreen(this,'services')">Услуги</a>
+      <a href="#booking" class="tab-btn" onclick="switchScreen(this,'booking')">Запись</a>
+      <a href="#portfolio" class="tab-btn" onclick="switchScreen(this,'portfolio')">Портфолио</a>
+    </nav>
+
+    <!-- ===== LOGIN ===== -->
+    <section id="login" class="screen active">
+      <div class="glass-card">
+        <div class="hero-brand">
+          <div class="brand-title">Parikmarium</div>
+          <div class="brand-sub">Морской стиль красоты</div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <label class="field-label" for="email">Электронная почта</label>
+          <input id="email" type="email" placeholder="hello@parikmarium.ru" value="hello@parikmarium.ru" />
+        </div>
+        <div style="margin-top: 16px;">
+          <label class="field-label" for="pass">Пароль</label>
+          <input id="pass" type="password" placeholder="••••••••" value="secret" />
+        </div>
+        <div style="margin-top: 16px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="admin-check" style="accent-color: var(--turquoise); width: 18px; height: 18px;" checked />
+          <label for="admin-check" style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Вход как администратор</label>
+        </div>
+        <div style="margin-top: 28px;">
+          <a href="#" class="btn btn-primary">Войти в салон</a>
+        </div>
+        <div style="text-align: center; margin-top: 16px;">
+          <a href="#" style="font-size: 0.85rem; color: rgba(255,255,255,0.5); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.15);">Нет аккаунта? Зарегистрироваться</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SERVICES ===== -->
+    <section id="services" class="screen">
+      <div style="margin-bottom: 8px;">
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; letter-spacing:0.03em; color:#fff;">Наши услуги</h2>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.45); margin-top:4px;">Выберите услугу и запишитесь онлайн</p>
+      </div>
+
+      <div class="glass-card" style="padding: 20px 20px 16px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom: 8px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--turquoise),#0096b4);display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,180,216,0.3);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <div>
+            <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; color:#fff; letter-spacing:0.02em;">Стрижка</h3>
+            <p style="font-size:0.8rem; color:rgba(255,255,255,0.45);">30 мин · 800 ₽</p>
+          </div>
+        </div>
+        <a href="#" class="btn btn-primary" style="margin-top:8px;">Записаться</a>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="service-info">
+          <h3>Окрашивание</h3>
+          <p>Премиальные красители · 60 мин</p>
+        </div>
+        <div class="service-price">1 500 ₽</div>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="service-info">
+          <h3>Бритьё</h3>
+          <p>Горячее полотенце · 45 мин</p>
+        </div>
+        <div class="service-price">1 200 ₽</div>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="service-info">
+          <h3>Уход за бородой</h3>
+          <p>Моделирование + масла · 30 мин</p>
+        </div>
+        <div class="service-price">900 ₽</div>
+      </div>
+    </section>
+
+    <!-- ===== BOOKING ===== -->
+    <section id="booking" class="screen">
+      <div style="margin-bottom: 12px;">
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:300; letter-spacing:0.03em; color:#fff;">Запись</h2>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.45); margin-top:4px;">Выберите удобную дату и время</p>
+      </div>
+
+      <div class="glass-card">
+        <div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none;">
+          <button class="chip selected" onclick="this.classList.add('selected');this.parentElement.querySelectorAll('.chip').forEach(c=>{if(c!==this)c.classList.remove('selected')});">16.06</button>
+          <button class="chip" onclick="this.classList.add('selected');this.parentElement.querySelectorAll('.chip').forEach(c=>{if(c!==this)c.classList.remove('selected')});">17.06</button>
+          <button class="chip" onclick="this.classList.add('selected');this.parentElement.querySelectorAll('.chip').forEach(c=>{if(c!==this)c.classList.remove('selected')});">18.06</button>
+          <button class="chip" onclick="this.classList.add('selected');this.parentElement.querySelectorAll('.chip').forEach(c=>{if(c!==this)c.classList.remove('selected')});">19.06</button>
+          <button class="chip" onclick="this.classList.add('selected');this.parentElement.querySelectorAll('.chip').forEach(c=>{if(c!==this)c.classList.remove('selected')});">20.06</button>
+        </div>
+
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; color:#fff; margin: 18px 0 12px; letter-spacing:0.02em;">Доступное время</h3>
+        <div class="chip-row">
+          <button class="chip" onclick="this.classList.toggle('selected')">10:00</button>
+          <button class="chip" onclick="this.classList.toggle('selected')">11:30</button>
+          <button class="chip selected" onclick="this.classList.toggle('selected')">14:00</button>
+          <button class="chip" onclick="this.classList.toggle('selected')">15:30</button>
+          <button class="chip" onclick="this.classList.toggle('selected')">17:00</button>
+          <button class="chip" onclick="this.classList.toggle('selected')">18:30</button>
+          <button class="chip" onclick="this.classList.toggle('selected')">20:00</button>
+        </div>
+
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px;">
+            <div>
+              <div style="font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:600; color:#fff;">Стрижка</div>
+              <div style="font-size:0.8rem; color:rgba(255,255,255,0.4);">30 мин · 16.06 в 14:00</div>
+            </div>
+            <div style="font-weight:700; color:var(--turquoise-bright); font-size:1.1rem;">800 ₽</div>
+          </div>
+          <a href="#" class="btn btn-primary">Записаться</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PORTFOLIO ===== -->
+    <section id="portfolio" class="screen">
+      <div style="margin-bottom: 16px;">
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; letter-spacing:0.03em; color:#fff;">Портфолио</h2>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.45); margin-top:4px;">Работы нашего салона</p>
+      </div>
+      <div class="portfolio-grid">
+        <a href="#" class="portfolio-item" aria-label="Боб-каре">
+          <img src="https://images.unsplash.com/photo-1560869713-da86a9ecbe26?w=600&q=80" alt="Боб-каре" loading="lazy" />
+          <div class="overlay">Боб-каре</div>
+        </a>
+        <a href="#" class="portfolio-item" aria-label="Окрашивание">
+          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80" alt="Окрашивание" loading="lazy" />
+          <div class="overlay">Окрашивание</div>
+        </a>
+        <a href="#" class="portfolio-item" aria-label="Мужская стрижка">
+          <img src="https://images.unsplash.com/photo-1599351431202-1e0e6a0a746d?w=600&q=80" alt="Мужская стрижка" loading="lazy" />
+          <div class="overlay">Мужская стрижка</div>
+        </a>
+        <a href="#" class="portfolio-item" aria-label="Уход за бородой">
+          <img src="https://images.unsplash.com/photo-1622288432450-6096844c3eb3?w=600&q=80" alt="Уход" loading="lazy" />
+          <div class="overlay">Уход за бородой</div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== RECOMMENDATIONS ===== -->
+    <section class="rec-section" aria-label="Рекомендации по дизайну">
+      <span class="tag">Что предлагаю</span>
+      <h2>Морской стиль в новом свете</h2>
+      <ul>
+        <li><strong>Стеклянные (glassmorphism) карточки</strong> — придают глубину и современный вид, сохраняя морскую прозрачность воды.</li>
+        <li><strong>Элегантная типографика</strong> — заголовки шрифтом Cormorant Garamond придают премиальность, как у брендов высокого уровня.</li>
+        <li><strong>Глубокий градиент фона</strong> — от ночного океана к бирюзовой волне, с плавными анимированными волнами.</li>
+        <li><strong>Микро-анимации и тени</strong> — при наведении карточки слегка поднимаются, тени становятся бирюзовыми.</li>
+        <li><strong>Новый логотип-значок</strong> — волна в круге, минималистично, но узнаваемо. Название «Parikmarium» остаётся центральным элементом.</li>
+        <li><strong>Нет «2010»</strong> — никаких плоских серых кнопок и стандартных системных шрифтов. Всё в единой морской палитре.</li>
+      </ul>
+      <p style="margin-top: 20px; font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.6;">
+        Если нравится направление — я могу перенести эти решения в Kotlin/Compose (цвета в <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:6px; color:var(--turquoise-bright);">theme/Color.kt</code>, шрифты в <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:6px; color:var(--turquoise-bright);">Type.kt</code>, компоненты в <code style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:6px; color:var(--turquoise-bright);">presentation/ui</code>).
+      </p>
+    </section>
+
+    <footer>
+      Parikmarium — морской стиль красоты · 2026
+    </footer>
+
+  </div>
+
+  <script>
+    function switchScreen(btn, id) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active');
+        if (s.id === id) s.classList.add('active');
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
