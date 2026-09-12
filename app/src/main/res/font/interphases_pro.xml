@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+    Поместите сюда файл шрифта:
+    app/src/main/res/font/interphases_pro_regular.ttf
+    Это коммерческий шрифт TT Interphases Pro от TypeType.
+    Лицензия: https://typetype.ru/fonts/tt-interphases/
+    -->
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/interphases_pro_regular" />
+</font-family>

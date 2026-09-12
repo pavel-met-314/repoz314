@@ -1,5 +1,6 @@
 package presentation.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.example.project.ui.theme.BrightTurquoise
+import com.example.project.ui.theme.DeepOcean
 import com.example.project.ui.theme.NavyBlue
 import com.example.project.ui.theme.NightOcean
 import com.example.project.ui.theme.OceanMist
@@ -24,9 +26,9 @@ fun MarineGradientBackground(
     val brush = if (darkTheme) {
         Brush.linearGradient(
             colors = listOf(
-                NightOcean,
-                Color(0xFF0F2840),
-                Color(0xFF153550)
+                DeepOcean,
+                Color(0xFF08142A),
+                Color(0xFF0A2842)
             ),
             start = Offset(0f, 0f),
             end = Offset(1000f, 1800f)
@@ -34,10 +36,10 @@ fun MarineGradientBackground(
     } else {
         Brush.linearGradient(
             colors = listOf(
-                OceanMist,
-                SeaFoam,
+                Color(0xFFEAF7FA),
                 Color(0xFFD4EEF5),
-                Color(0xFFEAF7FA)
+                Color(0xFFB8E6F0),
+                Color(0xFFE0F2F7)
             ),
             start = Offset(0f, 0f),
             end = Offset(800f, 1600f)
@@ -49,6 +51,21 @@ fun MarineGradientBackground(
             .fillMaxSize()
             .background(brush)
     ) {
+        // Декоративные элементы глубины океана (пузыри / световые пятна)
+        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+            // Большое мягкое пятно бирюзы в верхней части
+            drawCircle(
+                color = Color(0xFF48CAE4).copy(alpha = 0.08f),
+                radius = size.width * 0.6f,
+                center = androidx.compose.ui.geometry.Offset(size.width * 0.7f, size.height * 0.15f)
+            )
+            // Второе пятно — ниже, более прозрачное
+            drawCircle(
+                color = Color(0xFF00B4D8).copy(alpha = 0.06f),
+                radius = size.width * 0.45f,
+                center = androidx.compose.ui.geometry.Offset(size.width * 0.2f, size.height * 0.6f)
+            )
+        }
         content()
     }
 }

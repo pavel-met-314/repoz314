@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.project.ui.theme.Coral
 import com.example.project.ui.theme.ProjectTheme
 import domain.model.Service
 
@@ -37,9 +38,14 @@ fun ServiceCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp,
+            pressedElevation = 8.dp,
+            focusedElevation = 6.dp,
+            hoveredElevation = 6.dp
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -90,13 +96,13 @@ fun ServiceCard(
 private fun PriceBadge(price: Int) {
     Surface(
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.secondaryContainer
+        color = Coral.copy(alpha = 0.15f)
     ) {
         Text(
             text = "$price ₽",
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            color = Coral,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
         )
     }
