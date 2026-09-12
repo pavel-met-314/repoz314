@@ -49,8 +49,6 @@ fun ServiceCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.78f)
         ),
-        shadowElevation = 10.dp,
-        tonalElevation = 4.dp,
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp,
             pressedElevation = 10.dp,
