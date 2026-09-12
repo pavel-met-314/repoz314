@@ -1,5 +1,6 @@
 package com.example.project.ui.theme
 
+import com.example.project.R
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
